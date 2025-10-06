@@ -1,7 +1,6 @@
 package frc.lib.util.swerve;
 
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Meter;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -11,6 +10,7 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+// import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
@@ -41,7 +41,6 @@ public class SwerveModuleReal implements SwerveModuleIO {
 
     /* angle motor control requests */
     private final PositionVoltage anglePosition = new PositionVoltage(0);
-
     private final Rotation2d angleOffset;
 
     /** Instantiating motors and Encoders */
@@ -49,9 +48,10 @@ public class SwerveModuleReal implements SwerveModuleIO {
         Rotation2d cancoderOffset) {
 
         this.angleOffset = cancoderOffset;
-        angleEncoder = new CANcoder(cancoderID);
-        mDriveMotor = new TalonFX(driveMotorID);
-        mAngleMotor = new TalonFX(angleMotorID);
+
+        angleEncoder = new CANcoder(cancoderID, "canivore");
+        mDriveMotor = new TalonFX(driveMotorID, "canivore");
+        mAngleMotor = new TalonFX(angleMotorID, "canivore");
 
         configAngleEncoder();
         configAngleMotor();
@@ -68,7 +68,6 @@ public class SwerveModuleReal implements SwerveModuleIO {
         /* Motor Inverts and Neutral Mode */
         swerveAngleFXConfig.MotorOutput.Inverted = Constants.Swerve.angleMotorInvert;
         swerveAngleFXConfig.MotorOutput.NeutralMode = Constants.Swerve.angleNeutralMode;
-
 
         /* Gear Ratio and Wrapping Config */
         swerveAngleFXConfig.Feedback.FeedbackRemoteSensorID = angleEncoder.getDeviceID();
@@ -152,7 +151,7 @@ public class SwerveModuleReal implements SwerveModuleIO {
     public void setDriveMotor(double mps) {
         // driveVelocity.FeedForward = feedforward;
         double driveRPS = Conversions.metersPerSecondToRotationPerSecond(mps,
-            Constants.Swerve.wheelCircumference);
+            Constants.Swerve.wheelCircumference.in(Meter));
         driveVelocity.Velocity = driveRPS;
         mDriveMotor.setControl(driveVelocity);
     }
@@ -161,32 +160,17 @@ public class SwerveModuleReal implements SwerveModuleIO {
     public void updateInputs(SwerveModuleInputs inputs) {
         BaseStatusSignal.refreshAll(driveMotorSelectedPosition, driveMotorSelectedSensorVelocity,
             angleMotorSelectedPosition, absolutePositionAngleEncoder);
-        inputs.driveMotorSelectedPosition = driveMotorSelectedPosition.getValue().in(Rotations);
-        inputs.driveMotorSelectedSensorVelocity =
-            driveMotorSelectedSensorVelocity.getValue().in(RotationsPerSecond);
-        inputs.angleMotorSelectedPosition = angleMotorSelectedPosition.getValue().in(Rotations);
-        inputs.absolutePositionAngleEncoder = absolutePositionAngleEncoder.getValue().in(Rotations);
+        inputs.driveMotorSelectedPosition = driveMotorSelectedPosition.getValue();
+        inputs.driveMotorSelectedSensorVelocity = driveMotorSelectedSensorVelocity.getValue();
+        inputs.angleMotorSelectedPosition = angleMotorSelectedPosition.getValue();
+        inputs.absolutePositionAngleEncoder = absolutePositionAngleEncoder.getValue();
+        // inputs.driveMotorTemp = mDriveMotor.getDeviceTemp().getValueAsDouble();
+        // inputs.angleMotorTemp = mAngleMotor.getDeviceTemp().getValueAsDouble();
     }
 
     @Override
     public void setPositionAngleMotor(double absolutePosition) {
         mAngleMotor.setPosition(absolutePosition);
-    }
-
-    @Override
-    public void setModNumber(int number) {
-        throw new UnsupportedOperationException("Unimplemented method 'setModNumber'");
-    }
-
-    @Override
-    public void setDriveMotorPower(double power) {
-        throw new UnsupportedOperationException("Unimplemented method 'setDriveMotorPower'");
-    }
-
-    @Override
-    public void setAngleSelectedSensorPosition(double angle) {
-        throw new UnsupportedOperationException(
-            "Unimplemented method 'setAngleSelectedSensorPosition'");
     }
 
 }
