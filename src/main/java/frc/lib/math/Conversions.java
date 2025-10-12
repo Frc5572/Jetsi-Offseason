@@ -1,7 +1,5 @@
 package frc.lib.math;
 
-import frc.robot.Constants;
-
 /**
  * Mathematical conversions for swerve calculations
  */
@@ -132,10 +130,4 @@ public class Conversions {
     public static double reduceTo0_360(double goal) {
         return goal % 360;
     }
-
-
-    public static double wristOffsetToVisualAngle(double desiredAngle) {
-        return desiredAngle + Constants.ElevatorWristConstants.SetPoints.HOME_ANGLE.getDegrees();
-    }
-
 }

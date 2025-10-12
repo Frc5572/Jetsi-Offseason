@@ -1,5 +1,8 @@
 package frc.lib.util.swerve;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -85,16 +88,7 @@ public class SwerveModule {
      * @return The rotation of the CANCoder in {@link Rotation2d}
      */
     public Rotation2d getCANcoder() {
-        return Rotation2d.fromRotations(inputs.absolutePositionAngleEncoder);
-    }
-
-    /**
-     * Reset the Swerve Module angle to face forward
-     */
-    public void resetToAbsolute() {
-        double absolutePosition = getCANcoder().getRotations() - angleOffset.getRotations();
-        io.setPositionAngleMotor(absolutePosition);
-        inputs.angleMotorSelectedPosition = absolutePosition;
+        return Rotation2d.fromRotations(inputs.absolutePositionAngleEncoder.in(Rotations));
     }
 
     /**
@@ -104,21 +98,10 @@ public class SwerveModule {
      */
     public SwerveModuleState getState() {
         return new SwerveModuleState(
-            Conversions.rotationPerSecondToMetersPerSecond(inputs.driveMotorSelectedSensorVelocity,
-                Constants.Swerve.wheelCircumference),
-            Rotation2d.fromRotations(inputs.angleMotorSelectedPosition));
-    }
-
-    /**
-     * Get the current Swerve Module State
-     *
-     * @return The current {@link SwerveModuleState}
-     */
-    public SwerveModuleState getStateAbs() {
-        return new SwerveModuleState(
-            Conversions.rotationPerSecondToMetersPerSecond(inputs.driveMotorSelectedSensorVelocity,
-                Constants.Swerve.wheelCircumference),
-            Rotation2d.fromRotations(inputs.absolutePositionAngleEncoder));
+            Conversions.rotationPerSecondToMetersPerSecond(
+                inputs.driveMotorSelectedSensorVelocity.in(RotationsPerSecond),
+                Constants.Swerve.wheelCircumference.in(Meters)),
+            Rotation2d.fromRotations(inputs.angleMotorSelectedPosition.in(Rotations)));
     }
 
     /**
@@ -128,9 +111,9 @@ public class SwerveModule {
      */
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(
-            Conversions.rotationsToMeters(inputs.driveMotorSelectedPosition,
-                Constants.Swerve.wheelCircumference),
-            Rotation2d.fromRotations(inputs.angleMotorSelectedPosition));
-
+            Conversions.rotationsToMeters(
+                inputs.driveMotorSelectedSensorVelocity.in(RotationsPerSecond),
+                Constants.Swerve.wheelCircumference.in(Meters)),
+            Rotation2d.fromRotations(inputs.angleMotorSelectedPosition.in(Rotations)));
     }
 }

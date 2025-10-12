@@ -2,9 +2,9 @@ package frc.robot.subsystems.swerve;
 
 import java.util.Optional;
 import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import com.pathplanner.lib.util.PathPlannerLogging;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -15,34 +15,30 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.FieldConstants;
 import frc.lib.util.swerve.SwerveModule;
 import frc.robot.Constants;
-import frc.robot.Robot;
-import frc.robot.RobotState;
-import frc.robot.RobotState.OdometryObservation;
 
 /**
  * Swerve Subsystem
  */
 public class Swerve extends SubsystemBase {
+    public SwerveDrivePoseEstimator swerveOdometry;
     public SwerveModule[] swerveMods;
     private final Field2d field = new Field2d();
     private double fieldOffset;
     private SwerveInputsAutoLogged inputs = new SwerveInputsAutoLogged();
     private SwerveIO swerveIO;
+    // private boolean hasInitialized = false;
+    // private Boolean[] cameraSeesTarget = {false, false, false, false};
 
+    // private GenericEntry aprilTagTarget = RobotContainer.mainDriverTab.add("See April Tag",
+    // false)
+    // .withWidget(BuiltInWidgets.kBooleanBox)
+    // .withProperties(Map.of("Color when true", "green", "Color when false", "red"))
+    // .withPosition(11, 0).withSize(2, 2).getEntry();
 
-    /**
-     * Gyro
-     */
-    public enum SwerveGyro {
-        NAVX, CANAND
-    }
 
     /**
      * Swerve Subsystem
@@ -52,8 +48,8 @@ public class Swerve extends SubsystemBase {
         swerveMods = swerveIO.createModules();
         fieldOffset = getGyroYaw().getDegrees();
 
-        RobotState.getInstance().resetPoseEstimator(getGyroYaw(), getModulePositions(),
-            new Pose2d());
+        swerveOdometry = new SwerveDrivePoseEstimator(Constants.Swerve.swerveKinematics,
+            getGyroYaw(), getModulePositions(), new Pose2d());
 
         swerveIO.updateInputs(inputs);
 
@@ -85,16 +81,14 @@ public class Swerve extends SubsystemBase {
      */
     public void drive(Translation2d translation, double rotation, boolean fieldRelative,
         boolean isOpenLoop) {
-        Robot.profiler.push("swerve.drive()");
-        ChassisSpeeds chassisSpeeds =
-            new ChassisSpeeds(translation.getX(), translation.getY(), rotation);
-        if (fieldRelative) {
-            chassisSpeeds =
-                ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, getFieldRelativeHeading());
-        }
+        // Robot.profiler.push("swerve.drive()");
+        ChassisSpeeds chassisSpeeds = fieldRelative
+            ? ChassisSpeeds.fromFieldRelativeSpeeds(translation.getX(), translation.getY(),
+                rotation, getFieldRelativeHeading())
+            : new ChassisSpeeds(translation.getX(), translation.getY(), rotation);
 
         setModuleStates(chassisSpeeds);
-        Robot.profiler.pop();
+        // Robot.profiler.pop();
     }
 
     /**
@@ -116,11 +110,9 @@ public class Swerve extends SubsystemBase {
      * @param chassisSpeeds The desired Chassis Speeds
      */
     public void setModuleStates(ChassisSpeeds chassisSpeeds) {
-        chassisSpeeds = ChassisSpeeds.discretize(chassisSpeeds.vxMetersPerSecond,
-            chassisSpeeds.vyMetersPerSecond, chassisSpeeds.omegaRadiansPerSecond,
-            LoggedRobot.defaultPeriodSecs);
+        ChassisSpeeds targetSpeeds = ChassisSpeeds.discretize(chassisSpeeds, 0.02);
         SwerveModuleState[] swerveModuleStates =
-            Constants.Swerve.swerveKinematics.toSwerveModuleStates(chassisSpeeds);
+            Constants.Swerve.swerveKinematics.toSwerveModuleStates(targetSpeeds);
         setModuleStates(swerveModuleStates);
     }
 
@@ -147,20 +139,6 @@ public class Swerve extends SubsystemBase {
     }
 
     /**
-     * Get states based on ABS encoders
-     *
-     * @return SwerveModuleStates
-     */
-    @AutoLogOutput(key = "Absolute States")
-    public SwerveModuleState[] gModuleStates() {
-        SwerveModuleState[] states = new SwerveModuleState[4];
-        for (SwerveModule mod : swerveMods) {
-            states[mod.moduleNumber] = mod.getStateAbs();
-        }
-        return states;
-    }
-
-    /**
      * Get Swerve Module Positions
      *
      * @return Array of Swerve Module Positions
@@ -180,7 +158,7 @@ public class Swerve extends SubsystemBase {
      */
     @AutoLogOutput(key = "Odometry/Robot")
     public Pose2d getPose() {
-        return RobotState.getInstance().getPose2d();
+        return swerveOdometry.getEstimatedPosition();
     }
 
     /**
@@ -189,7 +167,7 @@ public class Swerve extends SubsystemBase {
      * @param pose Pose2d to set
      */
     public void resetOdometry(Pose2d pose) {
-        RobotState.getInstance().resetPoseEstimator(getGyroYaw(), getModulePositions(), pose);
+        swerveOdometry.resetPosition(getGyroYaw(), getModulePositions(), pose);
         this.swerveIO.setPose(pose);
     }
 
@@ -208,21 +186,9 @@ public class Swerve extends SubsystemBase {
      * @return Current rotation/yaw of gyro as {@link Rotation2d}
      */
     public Rotation2d getGyroYaw() {
-        Rotation2d robotYaw = switch (Constants.Swerve.selectedGyro) {
-            case NAVX -> {
-                float yaw = inputs.yaw;
-                yield (Constants.Swerve.invertGyro) ? Rotation2d.fromDegrees(-yaw)
-                    : Rotation2d.fromDegrees(yaw);
-
-            }
-            case CANAND -> {
-                double yaw = inputs.newyaw;
-                yield Rotation2d.fromRotations(yaw);
-
-            }
-            default -> new Rotation2d();
-        };
-        return robotYaw;
+        float yaw = inputs.yaw;
+        return (Constants.Swerve.invertGyro) ? Rotation2d.fromDegrees(-yaw)
+            : Rotation2d.fromDegrees(yaw);
     }
 
     /**
@@ -242,6 +208,10 @@ public class Swerve extends SubsystemBase {
         fieldOffset = getGyroYaw().getDegrees() + 180;
     }
 
+    // public void resetPvInitialization() {
+    // // hasInitialized = false;
+    // }
+
     @Override
     public void periodic() {
         // Robot.profiler.push("swerve_periodic");
@@ -252,27 +222,73 @@ public class Swerve extends SubsystemBase {
             mod.periodic();
         }
         // Robot.profiler.swap("update_swerve_odometry");
-        RobotState.getInstance().addOdometryObservation(
-            new OdometryObservation(getModulePositions(), getGyroYaw(), fieldOffset));
-
-        // update(getGyroYaw(), getModulePositions());
+        swerveOdometry.update(getGyroYaw(), getModulePositions());
         // Robot.profiler.swap("process_inputs");
         Logger.processInputs("Swerve", inputs);
+        // Robot.profiler.swap("process_cameras");
+        // for (int i = 0; i < cameras.length; i++) {
+        // cameras[i].periodic();
+        // cameraSeesTarget[i] = cameras[i].seesTarget();
+        // }
+        // Robot.profiler.swap("do_camera_stuff");
+        // Logger.recordOutput("/Swerve/hasInitialized", hasInitialized);
+        // if (!hasInitialized && !DriverStation.isAutonomous()) {
+        // Robot.profiler.push("init");
+        // for (int i = 0; i < cameras.length; i++) {
+        // Robot.profiler.push(cameras[i].inputs.name);
+        // var robotPose = cameras[i].getInitialPose();
+        // Logger.recordOutput("/Swerve/hasInitialPose[" + i + "]", robotPose.isPresent());
+
+        // if (robotPose.isPresent()) {
+        // swerveOdometry.resetPosition(getGyroYaw(), getModulePositions(),
+        // robotPose.get().robotPose);
+        // hasInitialized = true;
+        // Robot.profiler.pop();
+        // break;
+        // }
+        // Robot.profiler.pop();
+        // }
+        // Robot.profiler.pop();
+        // // } else {
+        // Robot.profiler.push("update");
+        // for (int i = 0; i < cameras.length; i++) {
+        // Robot.profiler.push(cameras[i].inputs.name);
+        // // var result = cameras[i].getEstimatedGlobalPose(getPose());
+        // if (result.isPresent()) {
+        // if (DriverStation.isAutonomous() && result.get().targetsUsed.size() < 2) {
+        // Robot.profiler.pop();
+        // continue;
+        // } else if (result.get().targetsUsed.size() == 1
+        // && result.get().targetsUsed.get(0).getPoseAmbiguity() > 0.1) {
+        // Robot.profiler.pop();
+        // continue;
+        // }
+        // swerveOdometry.addVisionMeasurement(result.get().estimatedPose.toPose2d(),
+        // Timer.getFPGATimestamp() - cameras[i].latency());
+        // // }
+        // Robot.profiler.pop();
+        // }
+        // Robot.profiler.pop();
+        // }
         // Robot.profiler.swap("update_shuffleboard");
         // Robot.profiler.push("field");
-        field.setRobotPose(getPose());
+        // // field.setRobotPose(getPose());
         // Robot.profiler.swap("apriltag");
+        // aprilTagTarget
+        // .setBoolean(Arrays.asList(cameraSeesTarget).stream().anyMatch(val -> val == true));
 
         // Robot.profiler.swap("dist-to-speaker");
-        SmartDashboard.putNumber("Distance to Speaker",
-            FieldConstants.allianceFlip(FieldConstants.Speaker.centerSpeakerOpening)
-                .getTranslation().minus(getPose().getTranslation()).getNorm());
+        // SmartDashboard.putNumber("Distance to Speaker",
+        // FieldConstants.allianceFlip(FieldConstants.Speaker.centerSpeakerOpening)
+        // .getTranslation().minus(getPose().getTranslation()).getNorm());
         // Robot.profiler.swap("simple");
-        SmartDashboard.putNumber("Gyro Yaw", getGyroYaw().getDegrees());
-        Logger.recordOutput("/Swerve/ActualStates", getModuleStates());
+        // SmartDashboard.putBoolean("Has Initialized", hasInitialized);
+        // SmartDashboard.putNumber("Gyro Yaw", getGyroYaw().getDegrees());
+        // Logger.recordOutput("/Swerve/ActualStates", getModuleStates());
         // Robot.profiler.pop();
         // Robot.profiler.pop();
         // Robot.profiler.swap("viz");
+        // viz.setPose(getPose());
         // Robot.profiler.pop();
     }
 
@@ -331,9 +347,5 @@ public class Swerve extends SubsystemBase {
                 FieldConstants.allianceFlip(FieldConstants.Speaker.centerSpeakerOpening).getX()
                     - getPose().getX());
         return distance;
-    }
-
-    public Command runNeo(double power) {
-        return Commands.runEnd(() -> swerveIO.runNeo(power), () -> swerveIO.runNeo(0), this);
     }
 }
