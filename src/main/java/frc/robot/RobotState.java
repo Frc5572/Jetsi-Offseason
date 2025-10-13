@@ -1,94 +1,86 @@
 package frc.robot;
 
-import edu.wpi.first.math.Matrix;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.subsystems.swerve.Swerve;
+import frc.robot.subsystems.vision.LimelightHelpers;
 
 /**
  * Singleton class to track Robot State
  */
 public class RobotState {
+    private boolean isInitialized = false;
+    private AngularVelocity gyroRate = DegreesPerSecond.of(0.0);
+
+    private final TimeInterpolatableBuffer<Rotation2d> rotationBuffer =
+        TimeInterpolatableBuffer.createBuffer(1.5);
+
+    public RobotState() {}
+
+    private SwerveDrivePoseEstimator swerveOdometry = null;
+
     /**
-     * Odometry Observation
+     * Initialize this {@link RobotState}. Should only be called once (usually from the
+     * {@link Swerve} constructor).
      */
-    public record OdometryObservation(SwerveModulePosition[] wheelPositions, Rotation2d gyroAngle,
-        double timestamp) {
+    public void init(SwerveModulePosition[] positions, Rotation2d gyroYaw) {
+        swerveOdometry = new SwerveDrivePoseEstimator(Constants.Swerve.swerveKinematics, gyroYaw,
+            positions, new Pose2d(0, 0, Rotation2d.fromDegrees(120)));
+        rotationBuffer.clear();
+        isInitialized = false;
+        SmartDashboard.putNumber("cameraOffset", 0.0);
     }
 
+
+    private double visionCutoff = 0;
+
     /**
-     * Vision Observation
+     * Use prior information to set the pose. Should only be used at the start of the program, or
+     * start of individual autonomous routines.
      */
-    public record VisionObservation(Pose2d visionPose, double timestamp, Matrix<N3, N1> stdDevs) {
+    public void resetPose(Pose2d pose, SwerveModulePosition[] positions, Rotation2d gyroYaw) {
+        swerveOdometry.resetPosition(gyroYaw, positions, pose);
+        visionCutoff = Timer.getFPGATimestamp();
+        rotationBuffer.clear();
+        rotationBuffer.getInternalBuffer().clear();
     }
 
-    private static final double poseBufferSizeSeconds = 2.0;
-    private Pose2d odometryPose = new Pose2d();
-    public SwerveDrivePoseEstimator swerveOdometry;
-    // Odometry
-    private final SwerveDriveKinematics kinematics = Constants.Swerve.swerveKinematics;
-    private static RobotState instance;
 
     /**
-     * Get Instance
-     *
-     * @return RobotState
+     * Get the current pose estimate using the global solver.
      */
-    public static RobotState getInstance() {
-        if (instance == null) {
-            instance = new RobotState();
-        }
-        return instance;
-    }
-
-    /**
-     * Robot State Constructor
-     */
-    private RobotState() {
-        // for (int i = 0; i < 3; ++i) {
-        // qStdDevs.set(i, 0, Math.pow(DriveConstants.odometryStateStdDevs.get(i, 0), 2));
-        // }
-        // kinematics = DriveConstants.kinematics;
-
-        // Setup NoteVisualizer
-        // NoteVisualizer.setRobotPoseSupplier(this::getEstimatedPose);
-    }
-
-    /**
-     * Reset Pose Estimation
-     *
-     * @param yaw Yaw of the Gyro
-     * @param modulePositions Module Positions
-     * @param pose2d Position to reset to
-     */
-    public void resetPoseEstimator(Rotation2d yaw, SwerveModulePosition[] modulePositions,
-        Pose2d pose2d) {
-        swerveOdometry = new SwerveDrivePoseEstimator(kinematics, yaw, modulePositions, pose2d);
-    }
-
-    /**
-     * Get current estimated position
-     *
-     * @return Pose2d
-     */
-    public Pose2d getPose2d() {
+    public Pose2d getGlobalPoseEstimate() {
         return swerveOdometry.getEstimatedPosition();
     }
 
-    /**
-     * Add odometry observation
-     */
-    public void addOdometryObservation(OdometryObservation observation) {
-        swerveOdometry.update(observation.gyroAngle(), observation.wheelPositions());
+    public void addSwerveObservation(SwerveModulePosition[] positions, Rotation2d gyroYaw) {
+        swerveOdometry.update(gyroYaw, positions);
     }
 
-    // public void addVisionObservation(AprilTagCameraResult observation) {
-    // swerveOdometry.addVisionMeasurement(observation.estimatedRobotPose.estimatedPose.toPose2d(),
-    // observation.timestamp, observation.visionMeasurementStdDevs);
-    // System.out.println("Adding Vision Observation for " + observation);
-    // }
+    public void setGyroRate(AngularVelocity rate) {
+        gyroRate = rate;
+    }
+
+    public void addVisionObservations(LimelightHelpers.PoseEstimate mt2) {
+        var rejectUpdate = false;
+        if (Math.abs(gyroRate.in(DegreesPerSecond)) > 720) {
+            rejectUpdate = true;
+        }
+        if (mt2.tagCount == 0) {
+            rejectUpdate = true;
+        }
+        if (!rejectUpdate) {
+            swerveOdometry.setVisionMeasurementStdDevs(VecBuilder.fill(.7, .7, 9999999));
+            swerveOdometry.addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
+        }
+
+    }
 }

@@ -1,6 +1,7 @@
 package frc.robot.subsystems.swerve;
 
 
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import com.studica.frc.AHRS;
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.lib.util.swerve.SwerveModule;
@@ -20,6 +21,7 @@ public class SwerveReal implements SwerveIO {
         inputs.yaw = gyro.getYaw();
         inputs.pitch = gyro.getPitch();
         inputs.roll = gyro.getRoll();
+        inputs.rate = DegreesPerSecond.of(gyro.getRate());
 
     }
 

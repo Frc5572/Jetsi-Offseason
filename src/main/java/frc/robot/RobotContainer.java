@@ -33,6 +33,7 @@ public class RobotContainer {
 
     /* Subsystems */
     private Swerve s_Swerve;
+    private final RobotState state = new RobotState();
 
     /**
      */
@@ -40,13 +41,13 @@ public class RobotContainer {
 
         switch (runtimeType) {
             case kReal:
-                s_Swerve = new Swerve(new SwerveReal());
+                s_Swerve = new Swerve(new SwerveReal(), state);
                 break;
             case kSimulation:
-                s_Swerve = new Swerve(new SwerveIO() {});
+                s_Swerve = new Swerve(new SwerveIO() {}, state);
                 break;
             default:
-                s_Swerve = new Swerve(new SwerveIO() {});
+                s_Swerve = new Swerve(new SwerveIO() {}, state);
         }
 
         // autoChooser.addOption("P32", new P32(s_Swerve, elevatorWrist, intake, shooter));

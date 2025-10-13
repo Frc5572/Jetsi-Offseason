@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.FieldConstants;
 import frc.lib.util.swerve.SwerveModule;
 import frc.robot.Constants;
+import frc.robot.RobotState;
 
 /**
  * Swerve Subsystem
@@ -30,6 +31,7 @@ public class Swerve extends SubsystemBase {
     private double fieldOffset;
     private SwerveInputsAutoLogged inputs = new SwerveInputsAutoLogged();
     private SwerveIO swerveIO;
+    private RobotState state;
     // private boolean hasInitialized = false;
     // private Boolean[] cameraSeesTarget = {false, false, false, false};
 
@@ -43,7 +45,7 @@ public class Swerve extends SubsystemBase {
     /**
      * Swerve Subsystem
      */
-    public Swerve(SwerveIO swerveIO) {
+    public Swerve(SwerveIO swerveIO, RobotState state) {
         this.swerveIO = swerveIO;
         swerveMods = swerveIO.createModules();
         fieldOffset = getGyroYaw().getDegrees();
@@ -52,6 +54,7 @@ public class Swerve extends SubsystemBase {
             getGyroYaw(), getModulePositions(), new Pose2d());
 
         swerveIO.updateInputs(inputs);
+        state.init(getModulePositions(), getGyroYaw());
 
         // AutoBuilder.configureHolonomic(this::getPose, this::resetOdometry,
         // this::getChassisSpeeds,
@@ -214,6 +217,8 @@ public class Swerve extends SubsystemBase {
 
     @Override
     public void periodic() {
+        state.setGyroRate(inputs.rate);
+        state.addSwerveObservation(getModulePositions(), getGyroYaw());
         // Robot.profiler.push("swerve_periodic");
         // Robot.profiler.push("update_inputs");
         swerveIO.updateInputs(inputs);
