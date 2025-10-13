@@ -17,7 +17,8 @@ public class LimeLight extends SubsystemBase {
     @Override
     public void periodic() {
         for (int i = 0; i > 1; i++) {
-            state.addVisionObservations(inputs.cameraPose[i]);
+            io.setRobotOrentation(state.getGlobalPoseEstimate());
+            state.addVisionObservations(inputs.cameraPose[i], inputs.tagCount[i], inputs.timestamp[i]);
         }
         Logger.processInputs("LL/", inputs);
     }

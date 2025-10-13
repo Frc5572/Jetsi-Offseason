@@ -69,17 +69,17 @@ public class RobotState {
         gyroRate = rate;
     }
 
-    public void addVisionObservations(LimelightHelpers.PoseEstimate mt2) {
+    public void addVisionObservations(Pose2d pose, int tagCount, double timestamp) {
         var rejectUpdate = false;
         if (Math.abs(gyroRate.in(DegreesPerSecond)) > 720) {
             rejectUpdate = true;
         }
-        if (mt2.tagCount == 0) {
+        if (tagCount == 0) {
             rejectUpdate = true;
         }
         if (!rejectUpdate) {
             swerveOdometry.setVisionMeasurementStdDevs(VecBuilder.fill(.7, .7, 9999999));
-            swerveOdometry.addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
+            swerveOdometry.addVisionMeasurement(pose, timestamp);
         }
 
     }
