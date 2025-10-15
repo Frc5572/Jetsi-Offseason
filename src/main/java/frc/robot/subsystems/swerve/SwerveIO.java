@@ -17,7 +17,7 @@ public interface SwerveIO {
         public float yaw;
         public float roll;
         public float pitch;
-        public AngularVelocity rate = DegreesPerSecond.of(0.0);
+        public double rate;
     }
 
     public default void updateInputs(SwerveInputs inputs) {}

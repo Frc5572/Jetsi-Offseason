@@ -12,14 +12,19 @@ public class LimeLight extends SubsystemBase {
     public LimeLight(RobotState state, LimeLightIO io) {
         this.state = state;
         this.io = io;
+        io.updateInputs(inputs);
     }
 
     @Override
     public void periodic() {
-        for (int i = 0; i > 1; i++) {
-            io.setRobotOrentation(state.getGlobalPoseEstimate());
-            state.addVisionObservations(inputs.cameraPose[i], inputs.tagCount[i], inputs.timestamp[i]);
-        }
+        io.updateInputs(inputs);
         Logger.processInputs("LL/", inputs);
+        io.setRobotOrentation(state.getGlobalPoseEstimate());
+        if (inputs.tagCountOne > 0) {
+            state.addVisionObservations(inputs.cameraPoseOne, inputs.tagCountOne, inputs.timestampOne);
+        }
+        if (inputs.tagCountTwo > 0) {
+            state.addVisionObservations(inputs.cameraPoseTwo, inputs.tagCountTwo, inputs.timestampTwo);
+        }
     }
 }

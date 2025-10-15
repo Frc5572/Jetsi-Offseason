@@ -18,7 +18,7 @@ import frc.robot.subsystems.vision.LimelightHelpers;
  */
 public class RobotState {
     private boolean isInitialized = false;
-    private AngularVelocity gyroRate = DegreesPerSecond.of(0.0);
+    private double gyroRate;
 
     private final TimeInterpolatableBuffer<Rotation2d> rotationBuffer =
         TimeInterpolatableBuffer.createBuffer(1.5);
@@ -65,13 +65,13 @@ public class RobotState {
         swerveOdometry.update(gyroYaw, positions);
     }
 
-    public void setGyroRate(AngularVelocity rate) {
+    public void setGyroRate(double rate) {
         gyroRate = rate;
     }
 
     public void addVisionObservations(Pose2d pose, int tagCount, double timestamp) {
         var rejectUpdate = false;
-        if (Math.abs(gyroRate.in(DegreesPerSecond)) > 720) {
+        if (Math.abs(gyroRate) > 720) {
             rejectUpdate = true;
         }
         if (tagCount == 0) {

@@ -47,6 +47,7 @@ public class Swerve extends SubsystemBase {
      */
     public Swerve(SwerveIO swerveIO, RobotState state) {
         this.swerveIO = swerveIO;
+        this.state = state;
         swerveMods = swerveIO.createModules();
         fieldOffset = getGyroYaw().getDegrees();
 
@@ -217,84 +218,15 @@ public class Swerve extends SubsystemBase {
 
     @Override
     public void periodic() {
-        state.setGyroRate(inputs.rate);
-        state.addSwerveObservation(getModulePositions(), getGyroYaw());
-        // Robot.profiler.push("swerve_periodic");
-        // Robot.profiler.push("update_inputs");
         swerveIO.updateInputs(inputs);
-        // Robot.profiler.swap("update_swerve_mods");
+        Logger.processInputs("Swerve", inputs);
         for (var mod : swerveMods) {
             mod.periodic();
         }
-        // Robot.profiler.swap("update_swerve_odometry");
+        state.setGyroRate(inputs.rate);
+        state.addSwerveObservation(getModulePositions(), getGyroYaw());
         swerveOdometry.update(getGyroYaw(), getModulePositions());
-        // Robot.profiler.swap("process_inputs");
-        Logger.processInputs("Swerve", inputs);
-        // Robot.profiler.swap("process_cameras");
-        // for (int i = 0; i < cameras.length; i++) {
-        // cameras[i].periodic();
-        // cameraSeesTarget[i] = cameras[i].seesTarget();
-        // }
-        // Robot.profiler.swap("do_camera_stuff");
-        // Logger.recordOutput("/Swerve/hasInitialized", hasInitialized);
-        // if (!hasInitialized && !DriverStation.isAutonomous()) {
-        // Robot.profiler.push("init");
-        // for (int i = 0; i < cameras.length; i++) {
-        // Robot.profiler.push(cameras[i].inputs.name);
-        // var robotPose = cameras[i].getInitialPose();
-        // Logger.recordOutput("/Swerve/hasInitialPose[" + i + "]", robotPose.isPresent());
 
-        // if (robotPose.isPresent()) {
-        // swerveOdometry.resetPosition(getGyroYaw(), getModulePositions(),
-        // robotPose.get().robotPose);
-        // hasInitialized = true;
-        // Robot.profiler.pop();
-        // break;
-        // }
-        // Robot.profiler.pop();
-        // }
-        // Robot.profiler.pop();
-        // // } else {
-        // Robot.profiler.push("update");
-        // for (int i = 0; i < cameras.length; i++) {
-        // Robot.profiler.push(cameras[i].inputs.name);
-        // // var result = cameras[i].getEstimatedGlobalPose(getPose());
-        // if (result.isPresent()) {
-        // if (DriverStation.isAutonomous() && result.get().targetsUsed.size() < 2) {
-        // Robot.profiler.pop();
-        // continue;
-        // } else if (result.get().targetsUsed.size() == 1
-        // && result.get().targetsUsed.get(0).getPoseAmbiguity() > 0.1) {
-        // Robot.profiler.pop();
-        // continue;
-        // }
-        // swerveOdometry.addVisionMeasurement(result.get().estimatedPose.toPose2d(),
-        // Timer.getFPGATimestamp() - cameras[i].latency());
-        // // }
-        // Robot.profiler.pop();
-        // }
-        // Robot.profiler.pop();
-        // }
-        // Robot.profiler.swap("update_shuffleboard");
-        // Robot.profiler.push("field");
-        // // field.setRobotPose(getPose());
-        // Robot.profiler.swap("apriltag");
-        // aprilTagTarget
-        // .setBoolean(Arrays.asList(cameraSeesTarget).stream().anyMatch(val -> val == true));
-
-        // Robot.profiler.swap("dist-to-speaker");
-        // SmartDashboard.putNumber("Distance to Speaker",
-        // FieldConstants.allianceFlip(FieldConstants.Speaker.centerSpeakerOpening)
-        // .getTranslation().minus(getPose().getTranslation()).getNorm());
-        // Robot.profiler.swap("simple");
-        // SmartDashboard.putBoolean("Has Initialized", hasInitialized);
-        // SmartDashboard.putNumber("Gyro Yaw", getGyroYaw().getDegrees());
-        // Logger.recordOutput("/Swerve/ActualStates", getModuleStates());
-        // Robot.profiler.pop();
-        // Robot.profiler.pop();
-        // Robot.profiler.swap("viz");
-        // viz.setPose(getPose());
-        // Robot.profiler.pop();
     }
 
     /**

@@ -21,7 +21,7 @@ public class SwerveReal implements SwerveIO {
         inputs.yaw = gyro.getYaw();
         inputs.pitch = gyro.getPitch();
         inputs.roll = gyro.getRoll();
-        inputs.rate = DegreesPerSecond.of(gyro.getRate());
+        inputs.rate = gyro.getRate();
 
     }
 

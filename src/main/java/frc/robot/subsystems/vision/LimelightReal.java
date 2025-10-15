@@ -5,21 +5,26 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 public class LimelightReal implements LimeLightIO {
-    String[] LLNames = {"LL0", "LL1"};
+    String[] LLNames = {"limelight-one", "limelight-two"};
 
     public LimelightReal() {}
 
     @SuppressWarnings("unlikely-arg-type")
     @Override
     public void updateInputs(LimeLightInputs inputs) {
-        for (int i = 0; i > LLNames.length; i++) {
-            inputs.latestCapture[i] = LimelightHelpers.getLatency_Capture(LLNames[i]);
-            var estimate = DriverStation.getAlliance().get().equals(Alliance.Blue) ?
-                LimelightHelpers.getBotPoseEstimate_wpiBlue(LLNames[i]) : LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2(LLNames[i]);
-            inputs.cameraPose[i] = estimate.pose;
-            inputs.tagCount[i] = estimate.tagCount;
-            inputs.timestamp[i] = estimate.timestampSeconds;
-        }
+        var estimateOne = DriverStation.getAlliance().get().equals(Alliance.Blue) ?
+            LimelightHelpers.getBotPoseEstimate_wpiBlue(LLNames[0]) : LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2(LLNames[0]);
+        var estimateTwo = DriverStation.getAlliance().get().equals(Alliance.Blue) ?
+            LimelightHelpers.getBotPoseEstimate_wpiBlue(LLNames[1]) : LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2(LLNames[1]);
+
+        inputs.cameraPoseOne = estimateOne.pose;
+        inputs.cameraPoseTwo = estimateTwo.pose;
+        inputs.tagCountOne= estimateOne.tagCount;
+        inputs.tagCountTwo= estimateTwo.tagCount;
+        inputs.timestampOne = estimateOne.timestampSeconds;
+        inputs.timestampTwo = estimateTwo.timestampSeconds;
+        inputs.latestCaptureOne = LimelightHelpers.getLatency_Capture(LLNames[0]);
+        inputs.latestCaptureTwo = LimelightHelpers.getLatency_Capture(LLNames[1]);
     }
 
     @Override
