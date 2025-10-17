@@ -1,8 +1,10 @@
 package frc.robot.subsystems.swerve;
 
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import java.util.Optional;
 import org.littletonrobotics.junction.AutoLog;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.units.measure.AngularVelocity;
 import frc.lib.util.swerve.SwerveModule;
 
 /** IO Class for Swerve */
@@ -15,6 +17,7 @@ public interface SwerveIO {
         public float yaw;
         public float roll;
         public float pitch;
+        public double rate;
     }
 
     public default void updateInputs(SwerveInputs inputs) {}
