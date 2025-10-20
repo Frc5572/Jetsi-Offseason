@@ -4,63 +4,38 @@
 
 package frc.robot;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Scanner;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
-import edu.wpi.first.wpilibj.AddressableLED;
-import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import edu.wpi.first.wpilibj.Filesystem;
-import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.lib.profiling.EmptyProfiler;
-import frc.lib.profiling.Profiler;
 
 /**
  * Runs tasks on Roborio in this file.
  */
 public class Robot extends LoggedRobot {
-    private RobotContainer robotContainer;
-    private Command autoChooser;
-
-    public static Profiler profiler;
-
-    AddressableLED m_led = new AddressableLED(9);
-    public static AddressableLEDBuffer m_ledBuffer = new AddressableLEDBuffer(120);
+    private final RobotContainer robotContainer;
 
     /**
      * Robot Run type
      */
     public static enum RobotRunType {
         /** Real Robot. */
-        kReal,
+        REAL,
         /** Simulation runtime. */
-        kSimulation,
+        SIM,
         /** Replay runtime. */
-        kReplay;
+        REPLAY;
     }
 
-    public static boolean inAuto = false;
-    public RobotRunType robotRunType = RobotRunType.kReal;
-    private Timer gcTimer = new Timer();
-    private Timer profileTimer = new Timer();
-    // We don't want to write empty profiles, so we have a boolean that only becomes true once
-    // teleop or auto has started.
-    private boolean hasDoneSomething = false;
-    private boolean hasStarted = false;
+    private final RobotRunType runType;
 
-    /** Set up logging, profiling, and robotContainer. */
-    @SuppressWarnings("resource")
-    public Robot() {
+    /** Set up Robot */
+    public Robot(boolean isReplay) {
         // Record metadata
         Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
         Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
@@ -78,41 +53,26 @@ public class Robot extends LoggedRobot {
                 Logger.recordMetadata("GitDirty", "Unknown");
                 break;
         }
-        m_led.setLength(m_ledBuffer.getLength());
-        m_led.setData(m_ledBuffer);
-        m_led.start();
-
-        if (isReal()) {
-            // Logger.addDataReceiver(new WPILOGWriter("/media/sda1")); // Log to a USB stick
-            Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
-            new PowerDistribution(1, ModuleType.kRev); // Enables power distribution logging
-            setUseTiming(true);
-            robotRunType = RobotRunType.kReal;
+        if (isReplay) {
+            runType = RobotRunType.REPLAY;
+            setUseTiming(false);
+            String logPath = LogFileUtil.findReplayLog();
+            Logger.setReplaySource(new WPILOGReader(logPath));
+            Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+        } else if (isReal()) {
+            runType = RobotRunType.REAL;
+            Logger.addDataReceiver(new WPILOGWriter("/media/sda1"));
+            Logger.addDataReceiver(new NT4Publisher());
+            LoggedPowerDistribution.getInstance(1, ModuleType.kRev);
         } else {
-            String logPath = findReplayLog();
-            if (logPath == null) {
-                Logger.addDataReceiver(
-                    new WPILOGWriter(Filesystem.getOperatingDirectory().getAbsolutePath()));
-                Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
-                setUseTiming(true);
-                robotRunType = RobotRunType.kSimulation;
-            } else {
-                Logger.setReplaySource(new WPILOGReader(logPath)); // Read replay log
-                Logger
-                    .addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
-                // Save outputs to a new log
-                setUseTiming(false); // Run as fast as possible
-                robotRunType = RobotRunType.kReplay;
-            }
+            runType = RobotRunType.SIM;
+            Logger.addDataReceiver(new WPILOGWriter("."));
+            Logger.addDataReceiver(new NT4Publisher());
         }
-        Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values
-        profiler = EmptyProfiler.INSTANCE;
-        // Logger.disableDeterministicTimestamps() // See "Deterministic Timestamps" in the
-        // "Understanding Data Flow" page
 
-        // Instantiate our RobotContainer. This will perform all our button bindings,
-        // and put our autonomous chooser on the dashboard.
-        robotContainer = new RobotContainer(robotRunType);
+        Logger.start();
+
+        robotContainer = new RobotContainer(runType);
     }
 
     /**
@@ -126,36 +86,8 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotPeriodic() {
-        if (hasStarted) {
-            // // profiler.endTick();
-            // if (profileTimer.advanceIfElapsed(1)) {
-            // if (hasDoneSomething) {
-            // profiler.save();
-            // profiler.reset();
-            // }
-            // }
-        } else {
-            hasStarted = true;
-        }
-        m_led.setData(m_ledBuffer);
-        // profiler.startTick();
-        // profiler.push("robotPeriodic()");
-        // profiler.push("draw_state_to_shuffleboard");
-
-        // Runs the Scheduler. This is responsible for polling buttons, adding newly-scheduled
-        // commands,
-        // running already-scheduled commands, removing finished or interrupted commands, and
-        // running
-        // subsystem periodic() methods. This must be called from the robot's periodic block in
-        // order for
-        // anything in the Command-based framework to work.
-        // profiler.swap("command_scheduler");
+        robotContainer.queryControllers();
         CommandScheduler.getInstance().run();
-        // profiler.swap("manual-gc");
-        if (gcTimer.advanceIfElapsed(5)) {
-            System.gc();
-        }
-        // profiler.pop();
     }
 
     @Override
@@ -168,42 +100,18 @@ public class Robot extends LoggedRobot {
      * This autonomous runs the autonomous command selected by your {@link RobotContainer} class.
      */
     @Override
-    public void autonomousInit() {
-        hasDoneSomething = true;
-        // profiler.push("autonomousInit()");
-        inAuto = true;
-
-        robotContainer.getAutonomousCommand().schedule();
-        autoChooser = robotContainer.getAutonomousCommand();
-
-        // schedule the autonomous command (example)
-        if (autoChooser != null) {
-            autoChooser.schedule();
-        }
-        // profiler.pop();
-    }
+    public void autonomousInit() {}
 
     /** This function is called periodically during autonomous. */
     @Override
     public void autonomousPeriodic() {}
 
     @Override
-    public void teleopInit() {
-        hasDoneSomething = true;
-        // profiler.push("teleopInit()");
-        inAuto = false;
-        if (autoChooser != null) {
-            autoChooser.cancel();
-        }
-        // profiler.pop();
-    }
+    public void teleopInit() {}
 
     /** This function is called periodically during operator control. */
     @Override
-    public void teleopPeriodic() {
-        // robotContainer.elevatorWrist.setWristPower(robotContainer.driver.getRightY() * 0.2);
-        // vision.update();
-    }
+    public void teleopPeriodic() {}
 
     @Override
     public void testInit() {
@@ -217,38 +125,4 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void simulationPeriodic() {}
-
-
-    private static final String environmentVariable = "AKIT_LOG_PATH";
-    private static final String advantageScopeFileName = "akit-log-path.txt";
-
-    /**
-     * Finds the path to a log file for replay, using the following priorities: 1. The value of the
-     * "AKIT_LOG_PATH" environment variable, if set 2. The file currently open in AdvantageScope, if
-     * available 3. The result of the prompt displayed to the user
-     */
-    public static String findReplayLog() {
-        // Read environment variables
-        String envPath = System.getenv(environmentVariable);
-        if (envPath != null) {
-            System.out.println("Using log from " + environmentVariable
-                + " environment variable - \"" + envPath + "\"");
-            return envPath;
-        }
-
-        // Read file from AdvantageScope
-        Path advantageScopeTempPath =
-            Paths.get(System.getProperty("java.io.tmpdir"), advantageScopeFileName);
-        String advantageScopeLogPath = null;
-        try (Scanner fileScanner = new Scanner(advantageScopeTempPath)) {
-            advantageScopeLogPath = fileScanner.nextLine();
-        } catch (IOException e) {
-            System.out.println("Something went wrong");
-        }
-        if (advantageScopeLogPath != null) {
-            System.out.println("Using log from AdvantageScope - \"" + advantageScopeLogPath + "\"");
-            return advantageScopeLogPath;
-        }
-        return null;
-    }
 }
