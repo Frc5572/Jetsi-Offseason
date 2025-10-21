@@ -99,8 +99,8 @@ public class SwerveModule {
     public SwerveModuleState getState() {
         return new SwerveModuleState(
             Conversions.rotationPerSecondToMetersPerSecond(
-                inputs.driveMotorSelectedSensorVelocity.in(RotationsPerSecond),
-                Constants.Swerve.wheelCircumference.in(Meters)),
+                inputs.driveMotorSelectedSensorVelocity,
+                Constants.Swerve.wheelCircumference),
             Rotation2d.fromRotations(inputs.angleMotorSelectedPosition.in(Rotations)));
     }
 
@@ -112,8 +112,8 @@ public class SwerveModule {
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(
             Conversions.rotationsToMeters(
-                inputs.driveMotorSelectedSensorVelocity.in(RotationsPerSecond),
-                Constants.Swerve.wheelCircumference.in(Meters)),
+                inputs.driveMotorSelectedPosition,
+                Constants.Swerve.wheelCircumference),
             Rotation2d.fromRotations(inputs.angleMotorSelectedPosition.in(Rotations)));
     }
 }

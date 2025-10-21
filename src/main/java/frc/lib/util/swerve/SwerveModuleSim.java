@@ -69,7 +69,7 @@ public class SwerveModuleSim implements SwerveModuleIO {
      */
     public void setDriveMotor(double mps) {
         double rpm = Conversions.metersPerSecondToRotationPerSecond(mps,
-            Constants.Swerve.wheelCircumference.in(Meters));
+            Constants.Swerve.wheelCircumference);
         driveFeedback.setSetpoint(rpm);
         double driveFF = driveFeedforward.calculate(mps);
         SmartDashboard.putNumber("ff/" + moduleNumber, driveFF);

@@ -1,16 +1,20 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Inches;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.studica.frc.AHRS.NavXComType;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Frequency;
+import edu.wpi.first.units.measure.Time;
+import frc.lib.util.LoggedTunableNumber;
+
+import static edu.wpi.first.units.Units.*;
 
 /**
  * Constants file.
@@ -36,6 +40,7 @@ public final class Constants {
      */
     public static final double LEAD_GAIN = 0.3;
 
+    public static final boolean tuningMode = false;
 
     /**
      * MoveToPos constants.
@@ -200,6 +205,10 @@ public final class Constants {
         // new PIDConstants(AUTO_ROTATION_KP, AUTO_ROTATION_KI, AUTO_ROTATION_KD),
         // // Drive base radius (distance from center to furthest module)
         // AUTO_MAX_SPEED, MOD0_MODOFFSET.getNorm(), new ReplanningConfig());
+
+      public static final Distance bumperFront = Inches.of(0);
+      public static final Distance bumperRight = Inches.of(0);
+
     }
 
     /**
@@ -220,4 +229,44 @@ public final class Constants {
             new TrapezoidProfile.Constraints(kMaxAngularSpeedRadiansPerSecond,
                 kMaxAngularSpeedRadiansPerSecondSquared);
     }
+
+  /** Vision Constants */
+  public static class Vision {
+
+    public static AprilTagFieldLayout fieldLayout;
+
+    /** Constants for an individual camera. */
+    public static final record CameraConstants(String name, int height, int width,
+                                               Rotation2d horizontalFieldOfView, Frequency framesPerSecond, Time latencyAvg,
+                                               Time latencyStdDev, double calibErrorAvg, double calibErrorStdDev,
+                                               Transform3d robotToCamera, double offset) {
+      public double centerPixelYawRads() {
+        return robotToCamera.getRotation().getZ();
+      }
+    }
+
+    public static final CameraConstants[] cameras = new CameraConstants[] {
+      new CameraConstants("cam0", 800, 1280, Rotation2d.fromDegrees(80), Hertz.of(20),
+        Seconds.of(0.3), Seconds.of(0.02), 0.8, 0.08,
+        new Transform3d(new Translation3d(Units.inchesToMeters(11),
+          -Units.inchesToMeters(12), Units.inchesToMeters(10)),
+          new Rotation3d(Math.PI, 0, 0)),
+        Units.inchesToMeters(0))};
+
+    public static final double zMargin = 0.75;
+    public static final double fieldBorderMargin = 0.5;
+  }
+
+
+  /** State Estimator Constants */
+  public static class StateEstimator {
+    public static final boolean keepInField = true;
+    public static final boolean keepOutOfReefs = true;
+    public static final LoggedTunableNumber globalVisionTrust =
+      new LoggedTunableNumber("globalVisionTrust", 0.2);
+    public static final LoggedTunableNumber globalVisionTrustRotation =
+      new LoggedTunableNumber("globalVisionTrustRotation", 0.5);
+    public static final LoggedTunableNumber localVisionTrust =
+      new LoggedTunableNumber("localVisionTrust", 0.2);
+  }
 }

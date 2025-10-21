@@ -151,7 +151,7 @@ public class SwerveModuleReal implements SwerveModuleIO {
     public void setDriveMotor(double mps) {
         // driveVelocity.FeedForward = feedforward;
         double driveRPS = Conversions.metersPerSecondToRotationPerSecond(mps,
-            Constants.Swerve.wheelCircumference.in(Meter));
+            Constants.Swerve.wheelCircumference);
         driveVelocity.Velocity = driveRPS;
         mDriveMotor.setControl(driveVelocity);
     }

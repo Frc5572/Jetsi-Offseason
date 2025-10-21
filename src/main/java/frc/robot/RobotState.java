@@ -1,94 +1,255 @@
 package frc.robot;
 
-import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.*;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.lib.math.Circle;
+
+import frc.robot.subsystems.swerve.Swerve;
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
+
+import java.util.List;
+import java.util.Optional;
+
+import static edu.wpi.first.units.Units.Meters;
+
+
 
 /**
  * Singleton class to track Robot State
  */
 public class RobotState {
-    /**
-     * Odometry Observation
-     */
-    public record OdometryObservation(SwerveModulePosition[] wheelPositions, Rotation2d gyroAngle,
-        double timestamp) {
+    private boolean isInitialized = false;
+    private SwerveDrivePoseEstimator swerveOdometry = null;
+    private double visionCutoff = 0;
+    private final TimeInterpolatableBuffer<Rotation2d> rotationBuffer =
+      TimeInterpolatableBuffer.createBuffer(1.5);
+  private final Circle stdDevGlobalCircle =
+    new Circle("State/GlobalEstimateStdDev", new Translation2d(), 0);
+  private final Circle stdDevLocalCircle =
+    new Circle("State/LocalEstimateStdDev", new Translation2d(), 0);
+
+
+  public RobotState() {}
+
+  /**
+   * Initialize this {@link RobotState}. Should only be called once (usually from the
+   * {@link Swerve} constructor).
+   */
+  public void init(SwerveModulePosition[] positions, Rotation2d gyroYaw) {
+    swerveOdometry = new SwerveDrivePoseEstimator(Constants.Swerve.swerveKinematics, gyroYaw,
+      positions, new Pose2d(0, 0, Rotation2d.fromDegrees(120)));
+    rotationBuffer.clear();
+    isInitialized = false;
+    SmartDashboard.putNumber("cameraOffset", 0.0);
+  }
+
+  /**
+   * Use prior information to set the pose. Should only be used at the start of the program, or
+   * start of individual autonomous routines.
+   */
+  public void resetPose(Pose2d pose, SwerveModulePosition[] positions, Rotation2d gyroYaw) {
+    swerveOdometry.resetPosition(gyroYaw, positions, pose);
+    visionCutoff = Timer.getFPGATimestamp();
+    rotationBuffer.clear();
+    rotationBuffer.getInternalBuffer().clear();
+  }
+
+  private Optional<Rotation2d> sampleRotationAt(double timestampSeconds) {
+    if (rotationBuffer.getInternalBuffer().isEmpty()) {
+      return Optional.empty();
     }
 
-    /**
-     * Vision Observation
-     */
-    public record VisionObservation(Pose2d visionPose, double timestamp, Matrix<N3, N1> stdDevs) {
+    double oldestOdometryTimestamp = rotationBuffer.getInternalBuffer().firstKey();
+    double newestOdometryTimestamp = rotationBuffer.getInternalBuffer().lastKey();
+    if (oldestOdometryTimestamp > timestampSeconds) {
+      return Optional.empty();
     }
+    timestampSeconds =
+      MathUtil.clamp(timestampSeconds, oldestOdometryTimestamp, newestOdometryTimestamp);
 
-    private static final double poseBufferSizeSeconds = 2.0;
-    private Pose2d odometryPose = new Pose2d();
-    public SwerveDrivePoseEstimator swerveOdometry;
-    // Odometry
-    private final SwerveDriveKinematics kinematics = Constants.Swerve.swerveKinematics;
-    private static RobotState instance;
+    return rotationBuffer.getSample(timestampSeconds);
+  }
 
-    /**
-     * Get Instance
-     *
-     * @return RobotState
-     */
-    public static RobotState getInstance() {
-        if (instance == null) {
-            instance = new RobotState();
+  /**
+   * Get the current pose estimate using the global solver.
+   */
+  public Pose2d getGlobalPoseEstimate() {
+    return swerveOdometry.getEstimatedPosition();
+  }
+
+  private void addVisionObservation(Pose3d cameraPose, Pose3d robotPose, double timestamp,
+    Vector<N3> baseUncertainty, List<PhotonTrackedTarget> targets, String prefix,
+    boolean doInit) {
+    if (Constants.StateEstimator.keepInField && (robotPose.getX() < 0 || robotPose.getY() < 0
+      || robotPose.getX() > FieldConstants.fieldLength.in(Meters)
+      || robotPose.getY() > FieldConstants.fieldWidth.in(Meters))) {
+      return;
+    }
+    double totalDistance = 0.0;
+    int count = 0;
+    for (var tag : targets) {
+      var maybeTagPose = Constants.Vision.fieldLayout.getTagPose(tag.getFiducialId());
+      if (maybeTagPose.isPresent()) {
+        var tagPose = maybeTagPose.get();
+        totalDistance += tagPose.getTranslation().getDistance(cameraPose.getTranslation());
+        count++;
+      }
+    }
+    double avgDistance = totalDistance / count;
+    double stddev = Math.pow(avgDistance, 2.0) / count;
+    Pose2d robotPose2d = robotPose.toPose2d();
+    if (doInit && !isInitialized) {
+      swerveOdometry.resetPose(robotPose2d);
+      isInitialized = true;
+    } else if (isInitialized) {
+      swerveOdometry.addVisionMeasurement(robotPose2d, timestamp,
+        baseUncertainty.times(stddev));
+    }
+  }
+
+  private void addVisionObservation(Pose3d cameraPose, Pose3d robotPose, double timestamp,
+    Vector<N3> baseUncertainty, List<PhotonTrackedTarget> targets, String prefix,
+    boolean doInit, Circle circle) {
+    if (Constants.StateEstimator.keepInField && (robotPose.getX() < 0 || robotPose.getY() < 0
+      || robotPose.getX() > FieldConstants.fieldLength.in(Meters)
+      || robotPose.getY() > FieldConstants.fieldWidth.in(Meters))) {
+      return;
+    }
+    double totalDistance = 0.0;
+    int count = 0;
+    for (var tag : targets) {
+      var maybeTagPose = Constants.Vision.fieldLayout.getTagPose(tag.getFiducialId());
+      if (maybeTagPose.isPresent()) {
+        var tagPose = maybeTagPose.get();
+        totalDistance += tagPose.getTranslation().getDistance(cameraPose.getTranslation());
+        count++;
+      }
+    }
+    double avgDistance = totalDistance / count;
+    double stddev = Math.pow(avgDistance, 2.0) / count;
+    Pose2d robotPose2d = robotPose.toPose2d();
+    if (doInit && !isInitialized) {
+      swerveOdometry.resetPose(robotPose2d);
+      isInitialized = true;
+    } else if (isInitialized) {
+      swerveOdometry.addVisionMeasurement(robotPose2d, timestamp,
+        baseUncertainty.times(stddev));
+    }
+  }
+
+  /**
+   * Add information from cameras.
+   */
+  public void addVisionObservation(PhotonPipelineResult result, Transform3d robotToCamera,
+    int whichCamera) {
+    if (result.getTimestampSeconds() < visionCutoff) {
+      return;
+    }
+    if (whichCamera == 0 && result.multitagResult.isPresent()) {
+      Transform3d best = result.multitagResult.get().estimatedPose.best;
+      Pose3d cameraPose =
+        new Pose3d().plus(best).relativeTo(Constants.Vision.fieldLayout.getOrigin());
+      Pose3d robotPose = cameraPose.plus(robotToCamera.inverse());
+      addVisionObservation(cameraPose, robotPose, result.getTimestampSeconds(),
+        VecBuilder.fill(Constants.StateEstimator.globalVisionTrust.getAsDouble(),
+          Constants.StateEstimator.globalVisionTrust.getAsDouble(),
+          Constants.StateEstimator.globalVisionTrustRotation.getAsDouble()),
+        result.getTargets(), "Global", true, stdDevGlobalCircle);
+    }
+  }
+
+  /**
+   * Add information from swerve drive.
+   */
+  public void addSwerveObservation(SwerveModulePosition[] positions, Rotation2d gyroYaw) {
+    swerveOdometry.update(gyroYaw, positions);
+    constrain(positions, gyroYaw);
+    rotationBuffer.addSample(MathSharedStore.getTimestamp(),
+      getGlobalPoseEstimate().getRotation());
+    stdDevGlobalCircle.setCenter(getGlobalPoseEstimate().getTranslation());
+    stdDevGlobalCircle.setRadius(stdDevGlobalCircle.getRadius() + 0.01);
+    stdDevLocalCircle.setCenter(new Translation2d());
+    stdDevLocalCircle.setRadius(0.0);
+  }
+
+  private void constrain(SwerveModulePosition[] positions, Rotation2d gyroYaw) {
+    var original = getGlobalPoseEstimate();
+    double x = original.getX();
+    double y = original.getY();
+    double t = -original.getRotation().getRadians();
+
+    Translation2d[] bumpers = new Translation2d[5];
+    Translation2d[] tr = new Translation2d[4];
+    for (int i = 0; i < 4; i++) {
+      double theta = t + i * Math.PI / 2;
+      tr[i] = new Translation2d(
+        x + Math.cos(theta) * Constants.Swerve.bumperFront.in(Meters)
+          + Math.sin(theta) * Constants.Swerve.bumperRight.in(Meters),
+        y - Math.sin(theta) * Constants.Swerve.bumperFront.in(Meters)
+          + Math.cos(theta) * Constants.Swerve.bumperRight.in(Meters));
+      bumpers[i] = tr[i];
+    }
+    bumpers[4] = bumpers[0];
+
+    double dx = 0.0;
+    double dy = 0.0;
+
+    if (Constants.StateEstimator.keepInField) {
+
+      double maxY = FieldConstants.fieldWidth.in(Meters);
+      double maxX = FieldConstants.fieldLength.in(Meters);
+
+      for (int i = 0; i < 4; i++) {
+        double x1 = tr[i].getX();
+        double y1 = tr[i].getY();
+        double x2 = maxX - x1;
+
+        // Simple keep in rect
+        if (x1 < 0.0) {
+          if (-x1 > Math.abs(dx)) {
+            dx = -x1;
+          }
+        } else if (x1 > maxX) {
+          double mdx = x1 - maxX;
+          if (mdx > Math.abs(dx)) {
+            dx = -mdx;
+          }
         }
-        return instance;
+        if (y1 < 0.0) {
+          if (-y1 > Math.abs(dy)) {
+            dy = -y1;
+          }
+        } else if (y1 > maxY) {
+          double mdy = y1 - maxY;
+          if (mdy > Math.abs(dy)) {
+            dy = -mdy;
+          }
+        }
+        }
+      }
     }
 
-    /**
-     * Robot State Constructor
-     */
-    private RobotState() {
-        // for (int i = 0; i < 3; ++i) {
-        // qStdDevs.set(i, 0, Math.pow(DriveConstants.odometryStateStdDevs.get(i, 0), 2));
-        // }
-        // kinematics = DriveConstants.kinematics;
+  public boolean isInitialized() {
+    return isInitialized;
+  }
 
-        // Setup NoteVisualizer
-        // NoteVisualizer.setRobotPoseSupplier(this::getEstimatedPose);
-    }
+  // TODO
 
-    /**
-     * Reset Pose Estimation
-     *
-     * @param yaw Yaw of the Gyro
-     * @param modulePositions Module Positions
-     * @param pose2d Position to reset to
-     */
-    public void resetPoseEstimator(Rotation2d yaw, SwerveModulePosition[] modulePositions,
-        Pose2d pose2d) {
-        swerveOdometry = new SwerveDrivePoseEstimator(kinematics, yaw, modulePositions, pose2d);
-    }
-
-    /**
-     * Get current estimated position
-     *
-     * @return Pose2d
-     */
-    public Pose2d getPose2d() {
-        return swerveOdometry.getEstimatedPosition();
-    }
-
-    /**
-     * Add odometry observation
-     */
-    public void addOdometryObservation(OdometryObservation observation) {
-        swerveOdometry.update(observation.gyroAngle(), observation.wheelPositions());
-    }
-
-    // public void addVisionObservation(AprilTagCameraResult observation) {
-    // swerveOdometry.addVisionMeasurement(observation.estimatedRobotPose.estimatedPose.toPose2d(),
-    // observation.timestamp, observation.visionMeasurementStdDevs);
-    // System.out.println("Adding Vision Observation for " + observation);
-    // }
+//    if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) {
+//      resetPose(new Pose2d(x + dx, y + dy, original.getRotation()), positions, gyroYaw);
+//      return;
+//    }
 }
+
+
+
