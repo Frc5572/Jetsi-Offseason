@@ -35,9 +35,9 @@ public class Vision extends SubsystemBase {
   }
 
   private final IntArrayList tmpArrList = new IntArrayList();
-
-  public Vision(VisionIO.Empty empty) {
-  }
+//
+//  public Vision(VisionIO.Empty empty) {
+//  }
 
   @Override
   public void periodic() {

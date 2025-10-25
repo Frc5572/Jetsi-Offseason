@@ -40,7 +40,7 @@ public final class Constants {
      */
     public static final double LEAD_GAIN = 0.3;
 
-    public static final boolean tuningMode = false;
+    public static final boolean tuningMode = true;
 
     /**
      * MoveToPos constants.
@@ -246,7 +246,7 @@ public final class Constants {
     }
 
     public static final CameraConstants[] cameras = new CameraConstants[] {
-      new CameraConstants("cam0", 800, 1280, Rotation2d.fromDegrees(80), Hertz.of(20),
+      new CameraConstants("camObj", 800, 1280, Rotation2d.fromDegrees(80), Hertz.of(20),
         Seconds.of(0.3), Seconds.of(0.02), 0.8, 0.08,
         new Transform3d(new Translation3d(Units.inchesToMeters(11),
           -Units.inchesToMeters(12), Units.inchesToMeters(10)),
@@ -260,7 +260,7 @@ public final class Constants {
 
   /** State Estimator Constants */
   public static class StateEstimator {
-    public static final boolean keepInField = true;
+    public static final boolean keepInField = false;
     public static final boolean keepOutOfReefs = true;
     public static final LoggedTunableNumber globalVisionTrust =
       new LoggedTunableNumber("globalVisionTrust", 0.2);

@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
+
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -251,4 +254,15 @@ public class Robot extends LoggedRobot {
         }
         return null;
     }
+
+  @Override
+  public void robotInit() {
+    try {
+      Constants.Vision.fieldLayout = new AprilTagFieldLayout(
+        Filesystem.getDeployDirectory().getPath() + "/localization/field_calibration.json");
+    } catch (Exception e) {
+      Constants.Vision.fieldLayout =
+        AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
+    }
+  }
 }

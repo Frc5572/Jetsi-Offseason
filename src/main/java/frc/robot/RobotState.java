@@ -120,11 +120,11 @@ public class RobotState {
   private void addVisionObservation(Pose3d cameraPose, Pose3d robotPose, double timestamp,
     Vector<N3> baseUncertainty, List<PhotonTrackedTarget> targets, String prefix,
     boolean doInit, Circle circle) {
-    if (Constants.StateEstimator.keepInField && (robotPose.getX() < 0 || robotPose.getY() < 0
-      || robotPose.getX() > FieldConstants.fieldLength.in(Meters)
-      || robotPose.getY() > FieldConstants.fieldWidth.in(Meters))) {
-      return;
-    }
+//    if (Constants.StateEstimator.keepInField && (robotPose.getX() < 0 || robotPose.getY() < 0
+//      || robotPose.getX() > FieldConstants.fieldLength.in(Meters)
+//      || robotPose.getY() > FieldConstants.fieldWidth.in(Meters))) {
+//      return;
+//    }
     double totalDistance = 0.0;
     int count = 0;
     for (var tag : targets) {
@@ -143,7 +143,7 @@ public class RobotState {
       isInitialized = true;
     } else if (isInitialized) {
       swerveOdometry.addVisionMeasurement(robotPose2d, timestamp,
-        baseUncertainty.times(stddev));
+        baseUncertainty.times(1.0));
     }
   }
 
@@ -161,9 +161,9 @@ public class RobotState {
         new Pose3d().plus(best).relativeTo(Constants.Vision.fieldLayout.getOrigin());
       Pose3d robotPose = cameraPose.plus(robotToCamera.inverse());
       addVisionObservation(cameraPose, robotPose, result.getTimestampSeconds(),
-        VecBuilder.fill(Constants.StateEstimator.globalVisionTrust.getAsDouble(),
-          Constants.StateEstimator.globalVisionTrust.getAsDouble(),
-          Constants.StateEstimator.globalVisionTrustRotation.getAsDouble()),
+        VecBuilder.fill(0.02,
+          0.02,
+          0.02),
         result.getTargets(), "Global", true, stdDevGlobalCircle);
     }
   }

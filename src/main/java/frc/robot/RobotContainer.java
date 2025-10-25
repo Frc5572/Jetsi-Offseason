@@ -37,23 +37,23 @@ public class RobotContainer {
     /* Subsystems */
     private Swerve s_Swerve;
     private Vision vision;
-
+    private RobotState state = new RobotState();
     /**
      */
     public RobotContainer(RobotRunType runtimeType) {
 
         switch (runtimeType) {
             case kReal:
-                s_Swerve = new Swerve(new SwerveReal());
-                vision = new Vision(PhotonIO::new);
+                s_Swerve = new Swerve(new SwerveReal(), state);
+                vision = new Vision(state, PhotonIO::new);
                 break;
             case kSimulation:
-                s_Swerve = new Swerve(new SwerveIO() {});
-                vision = new Vision(new VisionIO() {});
+                s_Swerve = new Swerve(new SwerveIO() {}, state);
+                vision = new Vision(state, VisionIO::empty);
                 break;
             default:
-                s_Swerve = new Swerve(new SwerveIO() {});
-                vision = new Vision(new VisionIO.Empty());
+                s_Swerve = new Swerve(new SwerveIO() {}, state);
+                vision = new Vision(state, VisionIO::empty);
         }
 
         // autoChooser.addOption("P32", new P32(s_Swerve, elevatorWrist, intake, shooter));
