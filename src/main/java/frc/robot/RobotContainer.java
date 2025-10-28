@@ -12,6 +12,9 @@ import frc.robot.commands.TeleopSwerve;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.SwerveIO;
 import frc.robot.subsystems.swerve.SwerveReal;
+import frc.robot.subsystems.vision.PhotonIO;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIO;
 
 
 /**
@@ -33,20 +36,24 @@ public class RobotContainer {
 
     /* Subsystems */
     private Swerve s_Swerve;
-
+    private Vision vision;
+    private RobotState state = new RobotState();
     /**
      */
     public RobotContainer(RobotRunType runtimeType) {
 
         switch (runtimeType) {
             case kReal:
-                s_Swerve = new Swerve(new SwerveReal());
+                s_Swerve = new Swerve(new SwerveReal(), state);
+                vision = new Vision(state, PhotonIO::new);
                 break;
             case kSimulation:
-                s_Swerve = new Swerve(new SwerveIO() {});
+                s_Swerve = new Swerve(new SwerveIO() {}, state);
+                vision = new Vision(state, VisionIO::empty);
                 break;
             default:
-                s_Swerve = new Swerve(new SwerveIO() {});
+                s_Swerve = new Swerve(new SwerveIO() {}, state);
+                vision = new Vision(state, VisionIO::empty);
         }
 
         // autoChooser.addOption("P32", new P32(s_Swerve, elevatorWrist, intake, shooter));

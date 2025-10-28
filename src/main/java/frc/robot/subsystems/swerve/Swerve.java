@@ -1,6 +1,8 @@
 package frc.robot.subsystems.swerve;
 
 import java.util.Optional;
+
+import frc.robot.RobotState;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import com.pathplanner.lib.util.PathPlannerLogging;
@@ -24,32 +26,22 @@ import frc.robot.Constants;
  * Swerve Subsystem
  */
 public class Swerve extends SubsystemBase {
-    public SwerveDrivePoseEstimator swerveOdometry;
     public SwerveModule[] swerveMods;
     private final Field2d field = new Field2d();
     private double fieldOffset;
     private SwerveInputsAutoLogged inputs = new SwerveInputsAutoLogged();
     private SwerveIO swerveIO;
-    // private boolean hasInitialized = false;
-    // private Boolean[] cameraSeesTarget = {false, false, false, false};
-
-    // private GenericEntry aprilTagTarget = RobotContainer.mainDriverTab.add("See April Tag",
-    // false)
-    // .withWidget(BuiltInWidgets.kBooleanBox)
-    // .withProperties(Map.of("Color when true", "green", "Color when false", "red"))
-    // .withPosition(11, 0).withSize(2, 2).getEntry();
+    private RobotState state;
 
 
     /**
      * Swerve Subsystem
      */
-    public Swerve(SwerveIO swerveIO) {
+    public Swerve(SwerveIO swerveIO, RobotState state) {
         this.swerveIO = swerveIO;
         swerveMods = swerveIO.createModules();
         fieldOffset = getGyroYaw().getDegrees();
-
-        swerveOdometry = new SwerveDrivePoseEstimator(Constants.Swerve.swerveKinematics,
-            getGyroYaw(), getModulePositions(), new Pose2d());
+        this.state = state;
 
         swerveIO.updateInputs(inputs);
 
@@ -69,6 +61,8 @@ public class Swerve extends SubsystemBase {
             // Do whatever you want with the poses here
             field.getObject("path").setPoses(poses);
         });
+
+        state.init(getModulePositions(), getGyroYaw());
     }
 
     /**
@@ -158,7 +152,7 @@ public class Swerve extends SubsystemBase {
      */
     @AutoLogOutput(key = "Odometry/Robot")
     public Pose2d getPose() {
-        return swerveOdometry.getEstimatedPosition();
+        return state.getGlobalPoseEstimate();
     }
 
     /**
@@ -167,7 +161,7 @@ public class Swerve extends SubsystemBase {
      * @param pose Pose2d to set
      */
     public void resetOdometry(Pose2d pose) {
-        swerveOdometry.resetPosition(getGyroYaw(), getModulePositions(), pose);
+        state.resetPose(pose, getModulePositions(), getGyroYaw());
         this.swerveIO.setPose(pose);
     }
 
@@ -222,7 +216,7 @@ public class Swerve extends SubsystemBase {
             mod.periodic();
         }
         // Robot.profiler.swap("update_swerve_odometry");
-        swerveOdometry.update(getGyroYaw(), getModulePositions());
+        state.addSwerveObservation(getModulePositions(), getGyroYaw());
         // Robot.profiler.swap("process_inputs");
         Logger.processInputs("Swerve", inputs);
         // Robot.profiler.swap("process_cameras");
