@@ -1,10 +1,9 @@
 package frc.lib.math;
 
-import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-//import frc.lib.util.viz.Drawable;
+// import frc.lib.util.viz.Drawable;
 
 /** Rotating Rectangle Shape */
 public class Rectangle implements ConvexShape {
@@ -64,10 +63,10 @@ public class Rectangle implements ConvexShape {
         this.pose = pose;
     }
 
-//    @Override
-//    public void drawImpl() {
-//        updateVertices();
-//        Logger.recordOutput(name, vertices);
-//    }
+    // @Override
+    // public void drawImpl() {
+    // updateVertices();
+    // Logger.recordOutput(name, vertices);
+    // }
 
 }
