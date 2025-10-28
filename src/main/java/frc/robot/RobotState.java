@@ -1,26 +1,27 @@
 package frc.robot;
 
-import edu.wpi.first.math.*;
+import static edu.wpi.first.units.Units.Meters;
+import java.util.List;
+import java.util.Optional;
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
+import edu.wpi.first.math.MathSharedStore;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.math.Circle;
-
 import frc.robot.subsystems.swerve.Swerve;
-import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
-
-import java.util.List;
-import java.util.Optional;
-
-import static edu.wpi.first.units.Units.Meters;
 
 
 
@@ -28,11 +29,11 @@ import static edu.wpi.first.units.Units.Meters;
  * Singleton class to track Robot State
  */
 public class RobotState {
-    private boolean isInitialized = false;
-    private SwerveDrivePoseEstimator swerveOdometry = null;
-    private double visionCutoff = 0;
-    private final TimeInterpolatableBuffer<Rotation2d> rotationBuffer =
-      TimeInterpolatableBuffer.createBuffer(1.5);
+  private boolean isInitialized = false;
+  private SwerveDrivePoseEstimator swerveOdometry = null;
+  private double visionCutoff = 0;
+  private final TimeInterpolatableBuffer<Rotation2d> rotationBuffer =
+    TimeInterpolatableBuffer.createBuffer(1.5);
   private final Circle stdDevGlobalCircle =
     new Circle("State/GlobalEstimateStdDev", new Translation2d(), 0);
   private final Circle stdDevLocalCircle =
@@ -42,8 +43,8 @@ public class RobotState {
   public RobotState() {}
 
   /**
-   * Initialize this {@link RobotState}. Should only be called once (usually from the
-   * {@link Swerve} constructor).
+   * Initialize this {@link RobotState}. Should only be called once (usually from the {@link Swerve}
+   * constructor).
    */
   public void init(SwerveModulePosition[] positions, Rotation2d gyroYaw) {
     swerveOdometry = new SwerveDrivePoseEstimator(Constants.Swerve.swerveKinematics, gyroYaw,
@@ -88,8 +89,7 @@ public class RobotState {
   }
 
   private void addVisionObservation(Pose3d cameraPose, Pose3d robotPose, double timestamp,
-    Vector<N3> baseUncertainty, List<PhotonTrackedTarget> targets, String prefix,
-    boolean doInit) {
+    Vector<N3> baseUncertainty, List<PhotonTrackedTarget> targets, String prefix, boolean doInit) {
     if (Constants.StateEstimator.keepInField && (robotPose.getX() < 0 || robotPose.getY() < 0
       || robotPose.getX() > FieldConstants.fieldLength.in(Meters)
       || robotPose.getY() > FieldConstants.fieldWidth.in(Meters))) {
@@ -112,19 +112,18 @@ public class RobotState {
       swerveOdometry.resetPose(robotPose2d);
       isInitialized = true;
     } else if (isInitialized) {
-      swerveOdometry.addVisionMeasurement(robotPose2d, timestamp,
-        baseUncertainty.times(stddev));
+      swerveOdometry.addVisionMeasurement(robotPose2d, timestamp, baseUncertainty.times(stddev));
     }
   }
 
   private void addVisionObservation(Pose3d cameraPose, Pose3d robotPose, double timestamp,
-    Vector<N3> baseUncertainty, List<PhotonTrackedTarget> targets, String prefix,
-    boolean doInit, Circle circle) {
-//    if (Constants.StateEstimator.keepInField && (robotPose.getX() < 0 || robotPose.getY() < 0
-//      || robotPose.getX() > FieldConstants.fieldLength.in(Meters)
-//      || robotPose.getY() > FieldConstants.fieldWidth.in(Meters))) {
-//      return;
-//    }
+    Vector<N3> baseUncertainty, List<PhotonTrackedTarget> targets, String prefix, boolean doInit,
+    Circle circle) {
+    // if (Constants.StateEstimator.keepInField && (robotPose.getX() < 0 || robotPose.getY() < 0
+    // || robotPose.getX() > FieldConstants.fieldLength.in(Meters)
+    // || robotPose.getY() > FieldConstants.fieldWidth.in(Meters))) {
+    // return;
+    // }
     double totalDistance = 0.0;
     int count = 0;
     for (var tag : targets) {
@@ -142,8 +141,7 @@ public class RobotState {
       swerveOdometry.resetPose(robotPose2d);
       isInitialized = true;
     } else if (isInitialized) {
-      swerveOdometry.addVisionMeasurement(robotPose2d, timestamp,
-        baseUncertainty.times(1.0));
+      swerveOdometry.addVisionMeasurement(robotPose2d, timestamp, baseUncertainty.times(1.0));
     }
   }
 
@@ -161,10 +159,7 @@ public class RobotState {
         new Pose3d().plus(best).relativeTo(Constants.Vision.fieldLayout.getOrigin());
       Pose3d robotPose = cameraPose.plus(robotToCamera.inverse());
       addVisionObservation(cameraPose, robotPose, result.getTimestampSeconds(),
-        VecBuilder.fill(0.02,
-          0.02,
-          0.02),
-        result.getTargets(), "Global", true, stdDevGlobalCircle);
+        VecBuilder.fill(0.02, 0.02, 0.02), result.getTargets(), "Global", true, stdDevGlobalCircle);
     }
   }
 
@@ -174,8 +169,7 @@ public class RobotState {
   public void addSwerveObservation(SwerveModulePosition[] positions, Rotation2d gyroYaw) {
     swerveOdometry.update(gyroYaw, positions);
     constrain(positions, gyroYaw);
-    rotationBuffer.addSample(MathSharedStore.getTimestamp(),
-      getGlobalPoseEstimate().getRotation());
+    rotationBuffer.addSample(MathSharedStore.getTimestamp(), getGlobalPoseEstimate().getRotation());
     stdDevGlobalCircle.setCenter(getGlobalPoseEstimate().getTranslation());
     stdDevGlobalCircle.setRadius(stdDevGlobalCircle.getRadius() + 0.01);
     stdDevLocalCircle.setCenter(new Translation2d());
@@ -235,9 +229,9 @@ public class RobotState {
             dy = -mdy;
           }
         }
-        }
       }
     }
+  }
 
   public boolean isInitialized() {
     return isInitialized;
@@ -245,11 +239,10 @@ public class RobotState {
 
   // TODO
 
-//    if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) {
-//      resetPose(new Pose2d(x + dx, y + dy, original.getRotation()), positions, gyroYaw);
-//      return;
-//    }
+  // if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) {
+  // resetPose(new Pose2d(x + dx, y + dy, original.getRotation()), positions, gyroYaw);
+  // return;
+  // }
 }
-
 
 
