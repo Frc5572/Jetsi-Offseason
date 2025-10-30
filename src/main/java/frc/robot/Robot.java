@@ -11,8 +11,11 @@ import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+import edu.wpi.first.net.WebServer;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.util.PhoenixUtil;
 
 /**
  * Runs tasks on Roborio in this file.
@@ -36,6 +39,10 @@ public class Robot extends LoggedRobot {
 
     /** Set up Robot */
     public Robot(boolean isReplay) {
+        if (!isReplay) {
+            WebServer.start(5800, Filesystem.getDeployDirectory().getPath());
+            Constants.Swerve.TUNABLE.publish();
+        }
         // Record metadata
         Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
         Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
@@ -86,6 +93,7 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotPeriodic() {
+        PhoenixUtil.refreshAll();
         robotContainer.queryControllers();
         CommandScheduler.getInstance().run();
     }

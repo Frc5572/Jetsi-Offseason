@@ -1,4 +1,4 @@
-package frc.robot.subsystems.swerve;
+package frc.robot.util.swerve;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import lombok.Builder;

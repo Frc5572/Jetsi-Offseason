@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #0e0e0e;
+            color: white;
+        }
+
+        #sliders {
+            width: 100vw;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr) 50vw;
+            padding: 1rem;
+            gap: 1rem;
+        }
+
+        #sliders div {
+            display: flex;
+            flex-direction: column;
+        }
+
+        slider {
+            border: solid 1px white;
+            height: calc(100vh - 7rem);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #controllers {
+            grid-row: span 2;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="sliders">
+        <span>Max Acceleration</span>
+        <span>Max Velocity</span>
+        <span>Max Angular Velocity</span>
+        <div id="controllers"></div>
+        <slider data-ntkey="/Tuning/maxAccel"></slider>
+        <slider data-ntkey="/Tuning/maxSpeed"></slider>
+        <slider data-ntkey="/Tuning/maxAngularVelocity"></slider>
+    </div>
+
+    <script type="module">
+        import { NT4_Client } from "./NT4.js"
+
+        const sliders = document.getElementById("sliders");
+        var slider_elements = new Map();
+        var slider_updates = new Map();
+        for (const child of sliders.children) {
+            if (child.tagName != "SLIDER") {
+                console.log(child.tagName);
+                continue;
+            }
+            let ntkey = child.getAttribute("data-ntkey");
+            slider_elements.set(ntkey, child);
+        }
+
+        console.log(slider_elements);
+
+        let client = new NT4_Client(
+            window.location.hostname,
+            "tuner",
+            (topic) => { },
+            (topic) => { },
+            (topic, timestamp, value) => {
+                if (slider_elements.has(topic.name)) {
+                    console.log(topic.name);
+                    let element = slider_elements.get(topic.name);
+                    slider_elements.delete(topic.name);
+                    if (value < 0.5) {
+                        svgDrawSlider(topic, element, 0, 1, value);
+                    } else {
+                        svgDrawSlider(topic, element, 0, value * 2.0, value);
+                    }
+                }
+                if (slider_updates.has(topic.name)) {
+                    console.log("update " + topic.name);
+                    let f = slider_updates.get(topic.name);
+                    f(value);
+                }
+            },
+            () => { },
+            () => { }
+        );
+
+
+
+        function svgDrawSlider(topic, element, min, max, val) {
+            client.publishTopic(topic.name, "double");
+            element.innerHTML = "";
+            let height = (max - min) * 100;
+            let width = height / element.clientHeight * element.clientWidth;
+            let stroke = height / 200.0;
+            let xmlns = "http://www.w3.org/2000/svg";
+            let svg = document.createElementNS(xmlns, "svg");
+            svg.setAttributeNS(null, "width", element.clientWidth);
+            svg.setAttributeNS(null, "height", element.clientHeight);
+            svg.setAttributeNS(null, "viewBox", "0 -" + max * 100 + " " + width + " " + height);
+            element.appendChild(svg);
+            let span = document.createElement("span");
+            span.innerText = val.toFixed(2);
+            element.appendChild(span);
+
+            let line = document.createElementNS(xmlns, "line");
+            line.setAttributeNS(null, "x1", 0);
+            line.setAttributeNS(null, "x2", width);
+            line.setAttributeNS(null, "y1", -val * 100);
+            line.setAttributeNS(null, "y2", -val * 100);
+            line.setAttributeNS(null, "style", "stroke:red;stroke-width:" + stroke + ";")
+            svg.appendChild(line);
+
+            let update_fun = (val) => {
+                line.setAttributeNS(null, "y1", -val * 100);
+                line.setAttributeNS(null, "y2", -val * 100);
+                span.innerText = val.toFixed(2);
+            };
+            slider_updates.set(topic.name, update_fun);
+
+            svg.addEventListener("click", (e) => {
+                const rect = element.getBoundingClientRect();
+                const clientY = event.clientY - rect.y;
+                const y = 1.0 - (clientY / rect.height);
+                const newVal = min + (max - min) * y;
+                client.addSample(topic.name, newVal);
+                update_fun(newVal);
+            })
+        }
+
+        window.addEventListener("load", () => {
+            console.log("connecting");
+            client.connect();
+            client.subscribe("/Tuning", true, true);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,4 +1,4 @@
-package frc.robot.subsystems.swerve;
+package frc.robot.util.swerve;
 
 import static edu.wpi.first.units.Units.Hertz;
 import java.util.ArrayList;
@@ -36,6 +36,8 @@ public class PhoenixOdometryThread extends Thread {
     private static boolean isCANFD = new CANBus("*").isNetworkFD();
     private final Lock odometryLock;
 
+    private boolean started = false;
+
     public PhoenixOdometryThread(Lock odometryLock) {
         this.odometryLock = odometryLock;
         setName("PhoenixOdometryThread");
@@ -44,14 +46,21 @@ public class PhoenixOdometryThread extends Thread {
 
     @Override
     public void start() {
-        if (timestampQueues.size() > 0) {
+        if ((genericQueues.size() > 0 || phoenixQueues.size() > 0) && timestampQueues.size() > 0) {
+            started = true;
             super.start();
         }
     }
 
+    /** Returns true if the thread is running. */
+    public boolean isStarted() {
+        return started;
+    }
+
     /** Registers a Phoenix signal to be read from the thread. */
     public Queue<Double> registerSignal(StatusSignal<Angle> signal) {
-        Queue<Double> queue = new ArrayBlockingQueue<>(20);
+        Queue<Double> queue =
+            new ArrayBlockingQueue<>(Constants.Swerve.MAX_ODOMETRY_SUBTICK_MEASUREMENTS);
         signalsLock.lock();
         odometryLock.lock();
         try {
@@ -69,7 +78,8 @@ public class PhoenixOdometryThread extends Thread {
 
     /** Registers a generic signal to be read from the thread. */
     public Queue<Double> registerSignal(DoubleSupplier signal) {
-        Queue<Double> queue = new ArrayBlockingQueue<>(20);
+        Queue<Double> queue =
+            new ArrayBlockingQueue<>(Constants.Swerve.MAX_ODOMETRY_SUBTICK_MEASUREMENTS);
         signalsLock.lock();
         odometryLock.lock();
         try {
@@ -84,7 +94,8 @@ public class PhoenixOdometryThread extends Thread {
 
     /** Returns a new queue that returns timestamp values for each sample. */
     public Queue<Double> makeTimestampQueue() {
-        Queue<Double> queue = new ArrayBlockingQueue<>(20);
+        Queue<Double> queue =
+            new ArrayBlockingQueue<>(Constants.Swerve.MAX_ODOMETRY_SUBTICK_MEASUREMENTS);
         odometryLock.lock();
         try {
             timestampQueues.add(queue);
