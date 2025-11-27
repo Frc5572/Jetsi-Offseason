@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import gg.questnav.questnav.QuestNav;
 
+/** QuestReal class */
 public class QuestReal implements QuestIO {
     private final QuestNav questNav = new QuestNav();
 

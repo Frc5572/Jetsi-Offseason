@@ -4,8 +4,10 @@ import org.littletonrobotics.junction.AutoLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import gg.questnav.questnav.PoseFrame;
 
+/** QuestIO class */
 public interface QuestIO {
 
+    /** QuestInputs class */
     @AutoLog
     class QuestInputs {
         PoseFrame[] poseFrames;

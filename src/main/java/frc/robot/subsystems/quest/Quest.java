@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+/** QuestNav Subsystem */
 public class Quest extends SubsystemBase {
     private QuestIO io;
     private QuestInputsAutoLogged inputs = new QuestInputsAutoLogged();
