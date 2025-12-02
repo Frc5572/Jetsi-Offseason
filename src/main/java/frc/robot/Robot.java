@@ -14,28 +14,18 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
-import edu.wpi.first.wpilibj.AddressableLED;
-import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.lib.profiling.EmptyProfiler;
-import frc.lib.profiling.Profiler;
 
 /**
  * Runs tasks on Roborio in this file.
  */
 public class Robot extends LoggedRobot {
+    @SuppressWarnings("unused")
     private RobotContainer robotContainer;
-    private Command autoChooser;
-
-    public static Profiler profiler;
-
-    AddressableLED m_led = new AddressableLED(9);
-    public static AddressableLEDBuffer m_ledBuffer = new AddressableLEDBuffer(120);
 
     /**
      * Robot Run type
@@ -52,11 +42,6 @@ public class Robot extends LoggedRobot {
     public static boolean inAuto = false;
     public RobotRunType robotRunType = RobotRunType.kReal;
     private Timer gcTimer = new Timer();
-    private Timer profileTimer = new Timer();
-    // We don't want to write empty profiles, so we have a boolean that only becomes true once
-    // teleop or auto has started.
-    private boolean hasDoneSomething = false;
-    private boolean hasStarted = false;
 
     /** Set up logging, profiling, and robotContainer. */
     @SuppressWarnings("resource")
@@ -78,9 +63,6 @@ public class Robot extends LoggedRobot {
                 Logger.recordMetadata("GitDirty", "Unknown");
                 break;
         }
-        m_led.setLength(m_ledBuffer.getLength());
-        m_led.setData(m_ledBuffer);
-        m_led.start();
 
         if (isReal()) {
             // Logger.addDataReceiver(new WPILOGWriter("/media/sda1")); // Log to a USB stick
@@ -106,7 +88,6 @@ public class Robot extends LoggedRobot {
             }
         }
         Logger.start(); // Start logging! No more data receivers, replay sources, or metadata values
-        profiler = EmptyProfiler.INSTANCE;
         // Logger.disableDeterministicTimestamps() // See "Deterministic Timestamps" in the
         // "Understanding Data Flow" page
 
@@ -126,36 +107,11 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotPeriodic() {
-        if (hasStarted) {
-            // // profiler.endTick();
-            // if (profileTimer.advanceIfElapsed(1)) {
-            // if (hasDoneSomething) {
-            // profiler.save();
-            // profiler.reset();
-            // }
-            // }
-        } else {
-            hasStarted = true;
-        }
-        m_led.setData(m_ledBuffer);
-        // profiler.startTick();
-        // profiler.push("robotPeriodic()");
-        // profiler.push("draw_state_to_shuffleboard");
 
-        // Runs the Scheduler. This is responsible for polling buttons, adding newly-scheduled
-        // commands,
-        // running already-scheduled commands, removing finished or interrupted commands, and
-        // running
-        // subsystem periodic() methods. This must be called from the robot's periodic block in
-        // order for
-        // anything in the Command-based framework to work.
-        // profiler.swap("command_scheduler");
         CommandScheduler.getInstance().run();
-        // profiler.swap("manual-gc");
         if (gcTimer.advanceIfElapsed(5)) {
             System.gc();
         }
-        // profiler.pop();
     }
 
     @Override
@@ -168,35 +124,14 @@ public class Robot extends LoggedRobot {
      * This autonomous runs the autonomous command selected by your {@link RobotContainer} class.
      */
     @Override
-    public void autonomousInit() {
-        hasDoneSomething = true;
-        // profiler.push("autonomousInit()");
-        inAuto = true;
-
-        robotContainer.getAutonomousCommand().schedule();
-        autoChooser = robotContainer.getAutonomousCommand();
-
-        // schedule the autonomous command (example)
-        if (autoChooser != null) {
-            autoChooser.schedule();
-        }
-        // profiler.pop();
-    }
+    public void autonomousInit() {}
 
     /** This function is called periodically during autonomous. */
     @Override
     public void autonomousPeriodic() {}
 
     @Override
-    public void teleopInit() {
-        hasDoneSomething = true;
-        // profiler.push("teleopInit()");
-        inAuto = false;
-        if (autoChooser != null) {
-            autoChooser.cancel();
-        }
-        // profiler.pop();
-    }
+    public void teleopInit() {}
 
     /** This function is called periodically during operator control. */
     @Override
