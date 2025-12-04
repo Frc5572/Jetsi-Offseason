@@ -148,6 +148,13 @@ public final class Constants {
 
         public static final double odometryFrequency = 100.0;
 
+        public static final double forwardLimit = 5.0;
+        public static final double forwardTiltLimit = 5.0;
+        public static final double leftTiltLimit = 5.0;
+        public static final double rightTiltLimit = 5.0;
+        public static final double backTiltLimit = 5.0;
+        public static final double skidLimit = 5.0;
+
         /* Module Specific Constants */
 
         // @anchor:moduleConstants
