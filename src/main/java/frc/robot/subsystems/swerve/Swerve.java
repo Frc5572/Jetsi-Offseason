@@ -12,8 +12,9 @@ import frc.robot.subsystems.swerve.gyro.GyroIO;
 import frc.robot.subsystems.swerve.gyro.GyroInputsAutoLogged;
 import frc.robot.subsystems.swerve.mod.SwerveModule;
 import frc.robot.subsystems.swerve.mod.SwerveModuleIO;
-import frc.robot.util.swerve.PhoenixOdometryThread;
-import frc.robot.util.swerve.SwerveState;
+import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
+import frc.robot.subsystems.swerve.util.SwerveRateLimiter;
+import frc.robot.subsystems.swerve.util.SwerveState;
 
 /**
  * Swerve Subsystem
@@ -25,6 +26,8 @@ public class Swerve extends SubsystemBase {
     private final SwerveModule[] modules;
     private final GyroIO gyro;
     private final GyroInputsAutoLogged gyroInputs = new GyroInputsAutoLogged();
+
+    private final SwerveRateLimiter limiter = new SwerveRateLimiter();
 
     public final SwerveState state;
 

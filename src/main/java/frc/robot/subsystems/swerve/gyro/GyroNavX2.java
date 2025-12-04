@@ -1,6 +1,6 @@
 package frc.robot.subsystems.swerve.gyro;
 
-import frc.robot.util.swerve.PhoenixOdometryThread;
+import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
 
 public class GyroNavX2 implements GyroIO {
 
