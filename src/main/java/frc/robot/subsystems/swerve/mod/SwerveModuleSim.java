@@ -1,6 +1,6 @@
 package frc.robot.subsystems.swerve.mod;
 
-import frc.robot.subsystems.swerve.PhoenixOdometryThread;
+import frc.robot.util.swerve.PhoenixOdometryThread;
 
 public class SwerveModuleSim implements SwerveModuleIO {
 

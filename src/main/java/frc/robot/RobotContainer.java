@@ -34,14 +34,14 @@ public class RobotContainer {
         switch (runtimeType) {
             case kReal:
                 // quest = new Quest(new QuestReal());
-                s_Swerve = new Swerve(new GyroNavX2(), SwerveModuleReal::new);
+                s_Swerve = new Swerve(GyroNavX2::new, SwerveModuleReal::new);
                 break;
             case kSimulation:
-                s_Swerve = new Swerve(new GyroIO.Empty(), SwerveModuleIO.Empty::new);
+                s_Swerve = new Swerve(GyroIO.Empty::new, SwerveModuleIO.Empty::new);
                 // quest = new Quest(new QuestIO() {});
                 break;
             default:
-                s_Swerve = new Swerve(new GyroIO.Empty(), SwerveModuleSim::new);
+                s_Swerve = new Swerve(GyroIO.Empty::new, SwerveModuleSim::new);
                 // quest = new Quest(new QuestIO() {});
         }
 

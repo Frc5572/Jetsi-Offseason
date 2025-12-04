@@ -8,7 +8,7 @@ public class SwerveModule {
     private final SwerveModuleIO io;
     private final SwerveModuleInputsAutoLogged inputs = new SwerveModuleInputsAutoLogged();
 
-    public SwerveModule(int moduleId, ModuleConstants constants, SwerveModuleIO io) {
+    public SwerveModule(int moduleId, SwerveModuleIO io) {
         this.inputsName = "Swerve/Module" + moduleId;
         this.io = io;
     }

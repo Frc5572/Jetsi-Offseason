@@ -1,6 +1,7 @@
 package frc.robot.subsystems.swerve.gyro;
 
 import org.littletonrobotics.junction.AutoLog;
+import frc.robot.util.swerve.PhoenixOdometryThread;
 
 public interface GyroIO {
 
@@ -12,7 +13,7 @@ public interface GyroIO {
     public void updateInputs(GyroInputs inputs);
 
     public static class Empty implements GyroIO {
-        public Empty() {}
+        public Empty(PhoenixOdometryThread odometryThread) {}
 
         @Override
         public void updateInputs(GyroInputs inputs) {

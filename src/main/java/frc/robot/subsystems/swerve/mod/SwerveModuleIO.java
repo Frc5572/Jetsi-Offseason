@@ -1,7 +1,7 @@
 package frc.robot.subsystems.swerve.mod;
 
 import org.littletonrobotics.junction.AutoLog;
-import frc.robot.subsystems.swerve.PhoenixOdometryThread;
+import frc.robot.util.swerve.PhoenixOdometryThread;
 
 public interface SwerveModuleIO {
 

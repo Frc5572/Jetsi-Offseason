@@ -146,6 +146,8 @@ public final class Constants {
         public static final NeutralModeValue angleNeutralMode = NeutralModeValue.Coast;
         public static final NeutralModeValue driveNeutralMode = NeutralModeValue.Brake;
 
+        public static final double odometryFrequency = 100.0;
+
         /* Module Specific Constants */
 
         // @anchor:moduleConstants
@@ -175,7 +177,7 @@ public final class Constants {
                 .angleMotorId(8)
                 .canCoderId(10)
                 .angleOffset(Rotation2d.fromRotations(0.317627 + 0.5))
-            
+
         };
         // @formatter:on
 
