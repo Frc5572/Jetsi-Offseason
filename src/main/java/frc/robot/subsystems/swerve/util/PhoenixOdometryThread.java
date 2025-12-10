@@ -36,7 +36,7 @@ public class PhoenixOdometryThread extends Thread {
     @Override
     public synchronized void start() {
         // Only start the thread if stuff is actually registered.
-        if (timestampQueues.size() > 0) {
+        if (phoenixQueues.size() > 0 || genericQueues.size() > 0) {
             super.start();
         }
     }

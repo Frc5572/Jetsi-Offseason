@@ -2,7 +2,9 @@ package frc.robot.subsystems.swerve.mod;
 
 import org.littletonrobotics.junction.AutoLog;
 import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
+import frc.robot.util.GenerateEmptyIO;
 
+@GenerateEmptyIO({int.class, PhoenixOdometryThread.class})
 public interface SwerveModuleIO {
 
     @AutoLog
@@ -11,14 +13,5 @@ public interface SwerveModuleIO {
     }
 
     public void updateInputs(SwerveModuleInputs inputs);
-
-    public static class Empty implements SwerveModuleIO {
-        public Empty(int index, PhoenixOdometryThread odometryThread) {}
-
-        @Override
-        public void updateInputs(SwerveModuleInputs inputs) {
-            // Intentionally do nothing
-        }
-    }
 
 }

@@ -5,9 +5,9 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Robot.RobotRunType;
 import frc.robot.subsystems.swerve.Swerve;
-import frc.robot.subsystems.swerve.gyro.GyroIO;
+import frc.robot.subsystems.swerve.gyro.GyroIOEmpty;
 import frc.robot.subsystems.swerve.gyro.GyroNavX2;
-import frc.robot.subsystems.swerve.mod.SwerveModuleIO;
+import frc.robot.subsystems.swerve.mod.SwerveModuleIOEmpty;
 import frc.robot.subsystems.swerve.mod.SwerveModuleReal;
 import frc.robot.subsystems.swerve.mod.SwerveModuleSim;
 
@@ -37,11 +37,11 @@ public class RobotContainer {
                 s_Swerve = new Swerve(GyroNavX2::new, SwerveModuleReal::new);
                 break;
             case kSimulation:
-                s_Swerve = new Swerve(GyroIO.Empty::new, SwerveModuleIO.Empty::new);
+                s_Swerve = new Swerve(GyroIOEmpty::new, SwerveModuleIOEmpty::new);
                 // quest = new Quest(new QuestIO() {});
                 break;
             default:
-                s_Swerve = new Swerve(GyroIO.Empty::new, SwerveModuleSim::new);
+                s_Swerve = new Swerve(GyroIOEmpty::new, SwerveModuleSim::new);
                 // quest = new Quest(new QuestIO() {});
         }
 

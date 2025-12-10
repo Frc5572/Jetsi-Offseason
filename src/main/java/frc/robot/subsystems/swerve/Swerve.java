@@ -1,11 +1,13 @@
 package frc.robot.subsystems.swerve;
 
+import java.util.Queue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.swerve.gyro.GyroIO;
@@ -26,6 +28,7 @@ public class Swerve extends SubsystemBase {
     private final SwerveModule[] modules;
     private final GyroIO gyro;
     private final GyroInputsAutoLogged gyroInputs = new GyroInputsAutoLogged();
+    private final Queue<Double> timestampQueue;
 
     private final SwerveRateLimiter limiter = new SwerveRateLimiter();
 
@@ -39,6 +42,7 @@ public class Swerve extends SubsystemBase {
         this.modules = IntStream.range(0, Constants.Swerve.modulesConstants.length)
             .mapToObj(i -> new SwerveModule(i, moduleIoFn.apply(i, this.odometryThread)))
             .toArray(SwerveModule[]::new);
+        this.timestampQueue = this.odometryThread.makeTimestampQueue();
         this.odometryThread.start();
         this.state = new SwerveState();
     }
@@ -51,10 +55,15 @@ public class Swerve extends SubsystemBase {
         }
         this.gyro.updateInputs(this.gyroInputs);
         Logger.processInputs("Swerve/Gyro", this.gyroInputs);
+
+
+
         this.odometryLock.unlock();
 
         for (int i = 0; i < modules.length; i++) {
             this.modules[i].periodic();
         }
+
+        limiter.update(new ChassisSpeeds());
     }
 }
