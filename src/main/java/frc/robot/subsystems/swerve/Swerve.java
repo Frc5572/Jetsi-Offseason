@@ -84,9 +84,7 @@ public class Swerve extends SubsystemBase {
             this.modules[i].periodic();
         }
 
-        double[] sampleTimestamps =
-            this.inputs.timestamps.length == 0 ? new double[] {Timer.getTimestamp()}
-                : this.inputs.timestamps;
+        double[] sampleTimestamps = this.inputs.timestamps;
         SwerveModulePosition[] wheelPositions = new SwerveModulePosition[modules.length];
         for (int i = 0; i < sampleTimestamps.length; i++) {
             for (int j = 0; j < modules.length; j++) {

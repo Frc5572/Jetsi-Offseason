@@ -1,5 +1,7 @@
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -7,11 +9,11 @@ import frc.robot.Robot.RobotRunType;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.SwerveIOEmpty;
 import frc.robot.subsystems.swerve.SwerveReal;
+import frc.robot.subsystems.swerve.SwerveSim;
 import frc.robot.subsystems.swerve.gyro.GyroIOEmpty;
 import frc.robot.subsystems.swerve.gyro.GyroNavX2;
 import frc.robot.subsystems.swerve.mod.SwerveModuleIOEmpty;
 import frc.robot.subsystems.swerve.mod.SwerveModuleReal;
-import frc.robot.subsystems.swerve.mod.SwerveModuleSim;
 import frc.robot.subsystems.swerve.util.TeleopControls;
 
 
@@ -27,7 +29,8 @@ public class RobotContainer {
     public final CommandXboxController driver = new CommandXboxController(Constants.DRIVER_ID);
 
     /* Subsystems */
-    private Swerve swerve;
+    private final Swerve swerve;
+    private final SwerveSim sim;
 
     /**
      */
@@ -35,13 +38,16 @@ public class RobotContainer {
 
         switch (runtimeType) {
             case kReal:
+                sim = null;
                 swerve = new Swerve(SwerveReal::new, GyroNavX2::new, SwerveModuleReal::new);
                 break;
             case kSimulation:
-                swerve = new Swerve(SwerveIOEmpty::new, GyroIOEmpty::new, SwerveModuleIOEmpty::new);
+                sim = new SwerveSim(new Pose2d(2.0, 2.0, Rotation2d.kZero));
+                swerve = new Swerve(sim::simProvider, sim::gyroProvider, sim::moduleProvider);
                 break;
             default:
-                swerve = new Swerve(SwerveIOEmpty::new, GyroIOEmpty::new, SwerveModuleSim::new);
+                sim = null;
+                swerve = new Swerve(SwerveIOEmpty::new, GyroIOEmpty::new, SwerveModuleIOEmpty::new);
         }
 
         swerve.setDefaultCommand(swerve.driveUserRelative(TeleopControls.teleopControls(

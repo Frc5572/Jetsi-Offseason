@@ -82,15 +82,21 @@ public final class Constants {
             new Translation2d(wheelBase / 2.0, trackWidth / 2.0);
         public static final Distance wheelRadius = wheelDiameter.div(2);
 
+        public static final Distance bumperFront = Inches.of(30);
+        public static final Distance bumperRight = Inches.of(30);
+
+        public static final Translation2d[] swerveTranslations =
+            new Translation2d[] {new Translation2d(wheelBase / 2.0, trackWidth / 2.0),
+                new Translation2d(wheelBase / 2.0, -trackWidth / 2.0),
+                new Translation2d(-wheelBase / 2.0, trackWidth / 2.0),
+                new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0)};
+
         /*
          * Swerve Kinematics No need to ever change this unless you are not doing a traditional
          * rectangular/square 4 module swerve
          */
         public static final SwerveDriveKinematics swerveKinematics =
-            new SwerveDriveKinematics(new Translation2d(wheelBase / 2.0, trackWidth / 2.0),
-                new Translation2d(wheelBase / 2.0, -trackWidth / 2.0),
-                new Translation2d(-wheelBase / 2.0, trackWidth / 2.0),
-                new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0));
+            new SwerveDriveKinematics(swerveTranslations);
 
         /* Module Gear Ratios */
         public static final double driveGearRatio = (8.14 / 1.0); // MK4i L1
