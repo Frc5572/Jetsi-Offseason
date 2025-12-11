@@ -5,9 +5,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
 import frc.robot.util.GenerateEmptyIO;
 
+/** IO for gyro */
 @GenerateEmptyIO({PhoenixOdometryThread.class})
 public interface GyroIO {
 
+    /** Inputs for gyro */
     @AutoLog
     public static class GyroInputs {
         public boolean connected;
@@ -21,6 +23,7 @@ public interface GyroIO {
         public double[] yawRads = new double[0];
     }
 
+    /** Update inputs */
     public void updateInputs(GyroInputs inputs);
 
 }

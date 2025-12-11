@@ -3,8 +3,10 @@ package frc.robot.subsystems.swerve.mod;
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
 
+/** Simulation implementation for Swerve Module */
 public class SwerveModuleSim implements SwerveModuleIO {
 
+    /** Simulation implementation for Swerve Module */
     public SwerveModuleSim(int index, PhoenixOdometryThread odometryThread) {
 
     }

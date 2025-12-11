@@ -34,9 +34,7 @@ import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
 import frc.robot.subsystems.swerve.util.SwerveRateLimiter;
 import frc.robot.subsystems.swerve.util.SwerveState;
 
-/**
- * Swerve Subsystem
- */
+/** Swerve Subsystem */
 public class Swerve extends SubsystemBase {
 
     private final Lock odometryLock = new ReentrantLock();
@@ -51,6 +49,7 @@ public class Swerve extends SubsystemBase {
 
     public final SwerveState state;
 
+    /** Swerve Subsystem */
     public Swerve(Function<PhoenixOdometryThread, SwerveIO> swerveIo,
         Function<PhoenixOdometryThread, GyroIO> gyroIo,
         BiFunction<Integer, PhoenixOdometryThread, SwerveModuleIO> moduleIoFn) {

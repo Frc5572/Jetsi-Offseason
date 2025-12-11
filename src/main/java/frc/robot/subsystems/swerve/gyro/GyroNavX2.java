@@ -7,12 +7,14 @@ import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
 
+/** NavX2 implementation for Gyro */
 public class GyroNavX2 implements GyroIO {
 
     private AHRS gyro = new AHRS(Constants.Swerve.navXID, (int) Constants.Swerve.odometryFrequency);
 
     private final Queue<Double> yawQueue;
 
+    /** NavX2 implementation for Gyro */
     public GyroNavX2(PhoenixOdometryThread odometryThread) {
         this.yawQueue = odometryThread.registerSignal(() -> Units.degreesToRadians(gyro.getYaw()));
     }

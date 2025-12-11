@@ -2,11 +2,19 @@ package frc.robot.subsystems.swerve.mod;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 
+/** Per-module constants */
 public class ModuleConstants {
 
+    /** CAN ID for the drive motor */
     public final int driveMotorId;
+
+    /** CAN ID for the angle motor */
     public final int angleMotorId;
+
+    /** CAN ID for the CANCoder */
     public final int canCoderId;
+
+    /** Reported angle when wheel is straight */
     public final Rotation2d angleOffset;
 
     private ModuleConstants(int driveMotorId, int angleMotorId, int canCoderId,
@@ -17,6 +25,7 @@ public class ModuleConstants {
         this.angleOffset = angleOffset;
     }
 
+    /** Create builder */
     public static Builder1 driveMotorId(int v) {
         return new Builder1(v);
     }
@@ -28,6 +37,7 @@ public class ModuleConstants {
             driveMotorId_ = driveMotorId;
         }
 
+        /** Continue builder */
         public Builder2 angleMotorId(int v) {
             return new Builder2(driveMotorId_, v);
         }
@@ -42,6 +52,7 @@ public class ModuleConstants {
             angleMotorId_ = angleMotorId;
         }
 
+        /** Continue builder */
         public Builder3 canCoderId(int v) {
             return new Builder3(driveMotorId_, angleMotorId_, v);
         }
@@ -58,6 +69,7 @@ public class ModuleConstants {
             canCoderId_ = canCoderId;
         }
 
+        /** Finish builder */
         public ModuleConstants angleOffset(Rotation2d v) {
             return new ModuleConstants(driveMotorId_, angleMotorId_, canCoderId_, v);
         }

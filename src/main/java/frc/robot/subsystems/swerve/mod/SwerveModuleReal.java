@@ -25,6 +25,7 @@ import frc.robot.Constants;
 import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
 import frc.robot.util.PhoenixSignals;
 
+/** Real swerve module implementation (assumes two TalonFXs) */
 public class SwerveModuleReal implements SwerveModuleIO {
 
     // Drive Motor and Signals
@@ -57,6 +58,7 @@ public class SwerveModuleReal implements SwerveModuleIO {
     // Absolute Offset
     private final Rotation2d angleOffset;
 
+    /** Real swerve module implementation */
     public SwerveModuleReal(int index, PhoenixOdometryThread odometryThread) {
         boolean isCanivore = Constants.Swerve.isCanviore;
 

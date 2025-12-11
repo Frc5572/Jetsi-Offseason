@@ -13,6 +13,7 @@ import com.ctre.phoenix6.StatusSignal;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.Constants;
 
+/** Thread for updating signals at faster-than-main-loop rate */
 public class PhoenixOdometryThread extends Thread {
 
     private final Lock odometryLock;
@@ -26,6 +27,7 @@ public class PhoenixOdometryThread extends Thread {
 
     private final boolean isCANFD = new CANBus("*").isNetworkFD();
 
+    /** Thread for updating signals at faster-than-main-loop rate */
     public PhoenixOdometryThread(Lock odometryLock) {
         this.odometryLock = odometryLock;
         this.setName("PhoenixOdometryThread");

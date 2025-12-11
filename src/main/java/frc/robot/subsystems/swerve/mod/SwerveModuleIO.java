@@ -5,9 +5,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
 import frc.robot.util.GenerateEmptyIO;
 
+/** IO for swerve module */
 @GenerateEmptyIO({int.class, PhoenixOdometryThread.class})
 public interface SwerveModuleIO {
 
+    /** Inputs for swerve module */
     @AutoLog
     public static class SwerveModuleInputs {
         public boolean driveConnected;
@@ -32,22 +34,31 @@ public interface SwerveModuleIO {
         public Rotation2d[] odometryAnglePositions = new Rotation2d[0];
     }
 
+    /** Update inputs */
     public void updateInputs(SwerveModuleInputs inputs);
 
+    /** Set voltage on drive motor */
     public void runDriveOpenLoop(double output);
 
+    /** Set voltage on angle motor */
     public void runAngleOpenLoop(double output);
 
+    /** Set velocity setpoint */
     public void runDriveVelocity(double velocityRadPerSec, double feedforward);
 
+    /** Set angle setpoint */
     public void runAnglePosition(Rotation2d rotation);
 
+    /** Set PID constants for drive motor */
     public void setDrivePID(double kP, double kI, double kD, double kS, double kV, double kA);
 
+    /** Set PID constants for angle motor */
     public void setAnglePID(double kP, double kI, double kD);
 
+    /** Set drive brake mode */
     public void setDriveBrakeMode(boolean enabled);
 
+    /** Set angle brake mode */
     public void setAngleBrakeMode(boolean enabled);
 
 }

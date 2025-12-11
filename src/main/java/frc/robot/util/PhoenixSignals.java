@@ -13,8 +13,9 @@ public class PhoenixSignals {
     public static void tryUntilOk(int maxAttempts, Supplier<StatusCode> command) {
         for (int i = 0; i < maxAttempts; i++) {
             var error = command.get();
-            if (error.isOK())
+            if (error.isOK()) {
                 break;
+            }
         }
     }
 
