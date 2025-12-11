@@ -66,6 +66,7 @@ public class SwerveState {
         estimatedPose = estimatedPose.exp(finalTwist);
     }
 
+    /** Update from photonvision (or other vision solution) */
     public void addApriltagObservation(Pose3d cameraPose, Transform3d robotToCamera,
         double translationStdDev, double rotationStdDev, double timestamp) {
         try {
