@@ -30,6 +30,7 @@ public class ModuleConstants {
         return new Builder1(v);
     }
 
+    /** Internal builder */
     public static class Builder1 {
         private final int driveMotorId_;
 
@@ -43,6 +44,7 @@ public class ModuleConstants {
         }
     }
 
+    /** Internal builder */
     public static class Builder2 {
         private final int driveMotorId_;
         private final int angleMotorId_;
@@ -58,6 +60,7 @@ public class ModuleConstants {
         }
     }
 
+    /** Internal builder */
     public static class Builder3 {
         private final int driveMotorId_;
         private final int angleMotorId_;
