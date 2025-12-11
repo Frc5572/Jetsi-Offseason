@@ -28,7 +28,6 @@ public class RobotContainer {
 
     /* Subsystems */
     private Swerve swerve;
-    // private final Quest quest;
 
     /**
      */
@@ -36,16 +35,13 @@ public class RobotContainer {
 
         switch (runtimeType) {
             case kReal:
-                // quest = new Quest(new QuestReal());
                 swerve = new Swerve(SwerveReal::new, GyroNavX2::new, SwerveModuleReal::new);
                 break;
             case kSimulation:
                 swerve = new Swerve(SwerveIOEmpty::new, GyroIOEmpty::new, SwerveModuleIOEmpty::new);
-                // quest = new Quest(new QuestIO() {});
                 break;
             default:
                 swerve = new Swerve(SwerveIOEmpty::new, GyroIOEmpty::new, SwerveModuleSim::new);
-                // quest = new Quest(new QuestIO() {});
         }
 
         swerve.setDefaultCommand(swerve.driveUserRelative(TeleopControls.teleopControls(
