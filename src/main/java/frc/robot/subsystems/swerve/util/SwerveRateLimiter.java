@@ -86,7 +86,7 @@ public class SwerveRateLimiter {
         publish("wantedAccStep0", wantedAcc);
 
         // Step 1: Robot cannot accelerate indefinitely. Ensure accelerations are achievable
-        // (sub-max to ensure correctness even under degredation).
+        // (sub-max to ensure correctness even under degradation).
         double subphysicalAccelerationLimit = 1.0 - (currentSpeed / Constants.Swerve.maxSpeed);
         publish("subphysicalAccelerationLimit", subphysicalAccelerationLimit);
         double maxForwardAccel = forwardLimit * subphysicalAccelerationLimit;
