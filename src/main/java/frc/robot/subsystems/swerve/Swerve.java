@@ -2,6 +2,7 @@ package frc.robot.subsystems.swerve;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -61,7 +62,17 @@ public class Swerve extends SubsystemBase {
             .toArray(SwerveModule[]::new);
         this.io = swerveIo.apply(odometryThread);
         this.odometryThread.start();
-        this.state = new SwerveState();
+        this.odometryLock.lock();
+        SwerveModulePosition[] initPositions = new SwerveModulePosition[modules.length];
+        try {
+            Arrays.stream(modules).map(mod -> {
+                mod.updateInputs();
+                return mod.getPosition();
+            }).toArray(_i -> initPositions);
+        } finally {
+            this.odometryLock.unlock();
+        }
+        this.state = new SwerveState(initPositions);
     }
 
     @Override
@@ -102,6 +113,8 @@ public class Swerve extends SubsystemBase {
         ChassisSpeeds currentSpeeds =
             Constants.Swerve.swerveKinematics.toChassisSpeeds(wheelStates);
         limiter.update(currentSpeeds);
+
+        Logger.recordOutput("Swerve/GlobalPoseEstimate", state.getGlobalPoseEstimate());
     }
 
     /*
