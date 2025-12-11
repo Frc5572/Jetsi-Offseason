@@ -9,7 +9,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 public class SwerveState {
 
     /** State of the swerve drive */
-    public SwerveState(/* TODO */) {
+    public SwerveState() {
 
     }
 
