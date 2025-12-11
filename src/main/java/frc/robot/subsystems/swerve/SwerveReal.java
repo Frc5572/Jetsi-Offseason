@@ -1,5 +1,22 @@
 package frc.robot.subsystems.swerve;
 
+import java.util.Queue;
+import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
+
+/** Real Swerve Implementation */
 public class SwerveReal implements SwerveIO {
+
+    private final Queue<Double> timestampQueue;
+
+    /** Real Swerve Implementation */
+    public SwerveReal(PhoenixOdometryThread odometryThread) {
+        this.timestampQueue = odometryThread.makeTimestampQueue();
+    }
+
+    @Override
+    public void updateInputs(SwerveInputs inputs) {
+        inputs.timestamps = this.timestampQueue.stream().mapToDouble(x -> x).toArray();
+        this.timestampQueue.clear();
+    }
 
 }

@@ -5,11 +5,14 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Robot.RobotRunType;
 import frc.robot.subsystems.swerve.Swerve;
+import frc.robot.subsystems.swerve.SwerveIOEmpty;
+import frc.robot.subsystems.swerve.SwerveReal;
 import frc.robot.subsystems.swerve.gyro.GyroIOEmpty;
 import frc.robot.subsystems.swerve.gyro.GyroNavX2;
 import frc.robot.subsystems.swerve.mod.SwerveModuleIOEmpty;
 import frc.robot.subsystems.swerve.mod.SwerveModuleReal;
 import frc.robot.subsystems.swerve.mod.SwerveModuleSim;
+import frc.robot.subsystems.swerve.util.TeleopControls;
 
 
 /**
@@ -24,7 +27,7 @@ public class RobotContainer {
     public final CommandXboxController driver = new CommandXboxController(Constants.DRIVER_ID);
 
     /* Subsystems */
-    private Swerve s_Swerve;
+    private Swerve swerve;
     // private final Quest quest;
 
     /**
@@ -34,16 +37,19 @@ public class RobotContainer {
         switch (runtimeType) {
             case kReal:
                 // quest = new Quest(new QuestReal());
-                s_Swerve = new Swerve(GyroNavX2::new, SwerveModuleReal::new);
+                swerve = new Swerve(SwerveReal::new, GyroNavX2::new, SwerveModuleReal::new);
                 break;
             case kSimulation:
-                s_Swerve = new Swerve(GyroIOEmpty::new, SwerveModuleIOEmpty::new);
+                swerve = new Swerve(SwerveIOEmpty::new, GyroIOEmpty::new, SwerveModuleIOEmpty::new);
                 // quest = new Quest(new QuestIO() {});
                 break;
             default:
-                s_Swerve = new Swerve(GyroIOEmpty::new, SwerveModuleSim::new);
+                swerve = new Swerve(SwerveIOEmpty::new, GyroIOEmpty::new, SwerveModuleSim::new);
                 // quest = new Quest(new QuestIO() {});
         }
+
+        swerve.setDefaultCommand(swerve.driveUserRelative(TeleopControls.teleopControls(
+            () -> -driver.getLeftY(), () -> -driver.getLeftX(), () -> -driver.getRightX())));
 
         configureButtonBindings();
     }

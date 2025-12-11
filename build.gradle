@@ -80,7 +80,7 @@ dependencies {
     nativeRelease wpi.java.vendor.jniRelease(wpi.platforms.desktop)
     simulationRelease wpi.sim.enableRelease()
 
-    annotationProcessor 'com.github.Frc5572:RobotTools:main-SNAPSHOT'
+    annotationProcessor 'com.github.Frc5572:RobotTools:io-gen-SNAPSHOT'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.util.PhoenixSignals;
 
 /**
  * Runs tasks on Roborio in this file.
@@ -107,6 +108,8 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotPeriodic() {
+
+        PhoenixSignals.refreshAll();
 
         CommandScheduler.getInstance().run();
         if (gcTimer.advanceIfElapsed(5)) {

@@ -61,6 +61,9 @@ public final class Constants {
      * Swerve Constants
      */
     public static final class Swerve {
+        /** If true, motors and absolute encoders are on canivore loop. Otherwise on rio. */
+        public static final boolean isCanviore = false;
+
         public static final double AUTO_ROTATION_KP = 5.0;
         public static final double AUTO_ROTATION_KI = 0.0;
         public static final double AUTO_ROTATION_KD = 0.0;
@@ -77,6 +80,7 @@ public final class Constants {
         public static final Distance wheelCircumference = wheelDiameter.times(Math.PI);
         public static final Translation2d MOD0_MODOFFSET =
             new Translation2d(wheelBase / 2.0, trackWidth / 2.0);
+        public static final Distance wheelRadius = wheelDiameter.div(2);
 
         /*
          * Swerve Kinematics No need to ever change this unless you are not doing a traditional
@@ -103,13 +107,13 @@ public final class Constants {
 
         /* Swerve Current Limiting */
         public static final int angleCurrentLimit = 25;
-        public static final int angleCurrentThreshold = 40;
-        public static final double angleCurrentThresholdTime = 0.1;
+        public static final int angleCurrentLowerLimit = 40;
+        public static final double angleCurrentLowerTimeThreshold = 0.1;
         public static final boolean angleEnableCurrentLimit = true;
 
         public static final int driveCurrentLimit = 35;
-        public static final int driveCurrentThreshold = 60;
-        public static final double driveCurrentThresholdTime = 0.1;
+        public static final int driveCurrentLowerLimit = 60;
+        public static final double driveCurrentLowerTimeThreshold = 0.1;
         public static final boolean driveEnableCurrentLimit = true;
 
         /*
