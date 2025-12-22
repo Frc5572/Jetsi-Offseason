@@ -20,8 +20,6 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -35,6 +33,7 @@ import frc.robot.subsystems.swerve.util.MoveToPoseBuilder;
 import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
 import frc.robot.subsystems.swerve.util.SwerveRateLimiter;
 import frc.robot.subsystems.swerve.util.SwerveState;
+import frc.robot.util.AllianceFlipUtil;
 
 /** Swerve Subsystem */
 public class Swerve extends SubsystemBase {
@@ -306,7 +305,7 @@ public class Swerve extends SubsystemBase {
     public Command resetFieldRelativeOffsetBasedOnPose() {
         return setFieldRelativeOffset(() -> {
             return state.getGlobalPoseEstimate().getRotation()
-                .plus(shouldFlipPath() ? Rotation2d.kZero : Rotation2d.k180deg);
+                .plus(AllianceFlipUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg);
         });
     }
 
@@ -357,18 +356,5 @@ public class Swerve extends SubsystemBase {
         for (int i = 0; i < modules.length; i++) {
             modules[i].setDesiredState(desiredStates[i]);
         }
-    }
-
-    /**
-     * Determine whether or not to flight the auto path
-     *
-     * @return True if flip path to Red Alliance, False if Blue
-     */
-    private static boolean shouldFlipPath() {
-        Optional<Alliance> ally = DriverStation.getAlliance();
-        if (ally.isPresent()) {
-            return ally.get() == Alliance.Red;
-        }
-        return false;
     }
 }

@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.subsystems.swerve.Swerve;
+import frc.robot.util.AllianceFlipUtil;
 
 /** Drive Swerve to a given pose. */
 public class MoveToPose extends Command {
@@ -80,15 +81,16 @@ public class MoveToPose extends Command {
         isCompleted = false;
     }
 
-    private final HolonomicDriveController holonomicDriveController = new HolonomicDriveController(
-        new PIDController(Constants.SwerveTransformPID.PID_XKP,
-            Constants.SwerveTransformPID.PID_XKI, Constants.SwerveTransformPID.PID_XKD),
-        new PIDController(Constants.SwerveTransformPID.PID_YKP,
-            Constants.SwerveTransformPID.PID_YKI, Constants.SwerveTransformPID.PID_YKD),
-        new ProfiledPIDController(Constants.SwerveTransformPID.PID_TKP,
-            Constants.SwerveTransformPID.PID_TKI, Constants.SwerveTransformPID.PID_TKD,
-            new Constraints(Constants.SwerveTransformPID.MAX_ANGULAR_VELOCITY,
-                Constants.SwerveTransformPID.MAX_ANGULAR_ACCELERATION)));
+    private static final HolonomicDriveController holonomicDriveController =
+        new HolonomicDriveController(
+            new PIDController(Constants.SwerveTransformPID.PID_XKP,
+                Constants.SwerveTransformPID.PID_XKI, Constants.SwerveTransformPID.PID_XKD),
+            new PIDController(Constants.SwerveTransformPID.PID_YKP,
+                Constants.SwerveTransformPID.PID_YKI, Constants.SwerveTransformPID.PID_YKD),
+            new ProfiledPIDController(Constants.SwerveTransformPID.PID_TKP,
+                Constants.SwerveTransformPID.PID_TKI, Constants.SwerveTransformPID.PID_TKD,
+                new Constraints(Constants.SwerveTransformPID.MAX_ANGULAR_VELOCITY,
+                    Constants.SwerveTransformPID.MAX_ANGULAR_ACCELERATION)));
 
     private Pose2d target = Pose2d.kZero;
 
@@ -96,7 +98,7 @@ public class MoveToPose extends Command {
     public void execute() {
         target = this.pose2dSupplier.get();
         if (flipForRed) {
-            // TODO game specific flipping
+            target = AllianceFlipUtil.apply(target);
         }
         ChassisSpeeds ctrlEffort = holonomicDriveController
             .calculate(swerve.state.getGlobalPoseEstimate(), target, 0, target.getRotation());
