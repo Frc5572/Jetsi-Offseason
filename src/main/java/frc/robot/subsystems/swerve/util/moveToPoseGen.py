@@ -28,6 +28,9 @@ optional_fields = [
     ["double", "rotationTolerance", "Units.degreesToRadians(5)"]
 ]
 
+class_name = "MoveToPose"
+package = "frc.robot.subsystems.swerve.util"
+
 class Fields:
     def __init__(self, name, default_fields, required_fields, optional_fields, permutation, constructor):
         self.name = name
@@ -207,20 +210,20 @@ class Fields:
 
 num_fields = len(required_fields) + len(optional_fields)
 
-with open('MoveToPoseBuilder.java', 'w') as f:
-    f.write('package frc.robot.subsystems.swerve.util;\n\n')
+with open('{}Builder.java'.format(class_name), 'w') as f:
+    f.write('package {};\n\n'.format(package))
 
     for imp in imports:
         f.write('import {};\n'.format(imp))
 
     f.write('\n/** generated */\n')
-    f.write('public class MoveToPoseBuilder {\n')
-    fields = Fields("MoveToPose", default_fields, required_fields, optional_fields, 0, "new MoveToPose({})")
+    f.write('public class {}Builder {{\n'.format(class_name))
+    fields = Fields(class_name, default_fields, required_fields, optional_fields, 0, "new {}({{}})".format(class_name))
     fields.write_fields(f, '    ')
     fields.write_constructor(f, '    ', True)
     fields.write_methods(f, '    ')
     for i in range(1, 2**num_fields - 1):
-        fields = Fields("MoveToPose", default_fields, required_fields, optional_fields, i, "new MoveToPose({})")
+        fields = Fields(class_name, default_fields, required_fields, optional_fields, i, "new {}({{}})".format(class_name))
 
         name = fields.builder_state_name()
 
