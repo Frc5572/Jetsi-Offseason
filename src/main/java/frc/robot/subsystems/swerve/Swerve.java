@@ -31,6 +31,7 @@ import frc.robot.subsystems.swerve.gyro.GyroIO;
 import frc.robot.subsystems.swerve.gyro.GyroInputsAutoLogged;
 import frc.robot.subsystems.swerve.mod.SwerveModule;
 import frc.robot.subsystems.swerve.mod.SwerveModuleIO;
+import frc.robot.subsystems.swerve.util.MoveToPoseBuilder;
 import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
 import frc.robot.subsystems.swerve.util.SwerveRateLimiter;
 import frc.robot.subsystems.swerve.util.SwerveState;
@@ -142,6 +143,14 @@ public class Swerve extends SubsystemBase {
     public Command driveFieldRelative(Supplier<ChassisSpeeds> driveSpeeds) {
         return driveRobotRelative(() -> ChassisSpeeds.fromFieldRelativeSpeeds(driveSpeeds.get(),
             state.getGlobalPoseEstimate().getRotation()));
+    }
+
+    /** Move to a global pose */
+    public MoveToPoseBuilder moveToPose() {
+        return new MoveToPoseBuilder(this, (speeds) -> {
+            speeds = limiter.limit(speeds);
+            setModuleStates(speeds);
+        });
     }
 
     private static final double ffStartDelay = 2.0;
