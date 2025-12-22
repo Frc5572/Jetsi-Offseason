@@ -3,6 +3,7 @@ package frc.robot.subsystems.swerve.util;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import choreo.auto.AutoRoutine;
 import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -11,6 +12,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.subsystems.swerve.Swerve;
@@ -18,6 +20,7 @@ import frc.robot.subsystems.swerve.Swerve;
 /** Drive Swerve to a given pose. */
 public class MoveToPose extends Command {
 
+    private final AutoRoutine autoRoutine;
     private final EventLoop eventLoop;
 
     private final Swerve swerve;
@@ -33,9 +36,14 @@ public class MoveToPose extends Command {
 
     /** DO NOT USE THIS. Use Swerve.moveToPose instead. */
     public MoveToPose(Swerve swerve, Consumer<ChassisSpeeds> robotRelativeConsumer,
-        Supplier<Pose2d> pose2dSupplier, EventLoop eventLoop, DoubleSupplier maxSpeedSupplier,
+        Supplier<Pose2d> pose2dSupplier, AutoRoutine autoRoutine, DoubleSupplier maxSpeedSupplier,
         boolean flipForRed, double tol, double rTol) {
-        this.eventLoop = eventLoop;
+        this.autoRoutine = autoRoutine;
+        if (autoRoutine == null) {
+            this.eventLoop = CommandScheduler.getInstance().getDefaultButtonLoop();
+        } else {
+            this.eventLoop = autoRoutine.loop();
+        }
         this.swerve = swerve;
         this.robotRelativeConsumer = robotRelativeConsumer;
         this.pose2dSupplier = pose2dSupplier;
@@ -45,10 +53,23 @@ public class MoveToPose extends Command {
         this.rotationTolerance = rTol;
     }
 
+    /**
+     * Returns a trigger that is true while the trajectory is scheduled.
+     *
+     * @return A trigger that is true while the trajectory is scheduled.
+     */
     public Trigger active() {
+        if (autoRoutine != null) {
+            return new Trigger(eventLoop,
+                () -> this.isActive && autoRoutine.active().getAsBoolean());
+        }
         return new Trigger(eventLoop, () -> this.isActive);
     }
 
+    /**
+     * Returns a trigger that is true when the trajectory is finished. This will return true on
+     * subsequent evaluations, until this command is restarted.
+     */
     public Trigger done() {
         return new Trigger(eventLoop, () -> this.isCompleted);
     }
@@ -79,6 +100,13 @@ public class MoveToPose extends Command {
         }
         ChassisSpeeds ctrlEffort = holonomicDriveController
             .calculate(swerve.state.getGlobalPoseEstimate(), target, 0, target.getRotation());
+        double speed = Math.hypot(ctrlEffort.vxMetersPerSecond, ctrlEffort.vyMetersPerSecond);
+        double maxSpeed = this.maxSpeedSupplier.getAsDouble();
+        if (speed > maxSpeed) {
+            double mul = maxSpeed / speed;
+            ctrlEffort.vxMetersPerSecond *= mul;
+            ctrlEffort.vyMetersPerSecond *= mul;
+        }
         this.robotRelativeConsumer.accept(ctrlEffort);
     }
 

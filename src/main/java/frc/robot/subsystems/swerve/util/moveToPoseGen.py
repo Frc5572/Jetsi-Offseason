@@ -3,10 +3,10 @@ imports = [
     "java.util.function.Consumer",
     "java.util.function.DoubleSupplier",
     "java.util.function.Supplier",
+    "choreo.auto.AutoRoutine",
     "edu.wpi.first.math.geometry.Pose2d",
     "edu.wpi.first.math.kinematics.ChassisSpeeds",
     "edu.wpi.first.math.util.Units",
-    "edu.wpi.first.wpilibj.event.EventLoop",
     "frc.robot.Constants",
     "frc.robot.subsystems.swerve.Swerve"
 ]
@@ -21,7 +21,7 @@ required_fields = [
 ]
 
 optional_fields = [
-    ["EventLoop", "eventLoop", "null"],
+    ["AutoRoutine", "autoRoutine", "null"],
     ["DoubleSupplier", "maxSpeed", "() -> Constants.Swerve.autoMaxSpeed", ["double", "maxSpeedConst", "() -> maxSpeedConst"]],
     ["boolean", "flipForRed", "true"],
     ["double", "translationTolerance", "0.5"],
@@ -232,10 +232,10 @@ with open('MoveToPoseBuilder.java', 'w') as f:
         f.write('    }\n')
     f.write('}\n')
 
-first = Fields("MoveToPose", default_fields, required_fields, optional_fields, 0, "new MoveToPose({})")
-second = first.next(2)
-third = second.next(1)
+# first = Fields("MoveToPose", default_fields, required_fields, optional_fields, 0, "new MoveToPose({})")
+# second = first.next(2)
+# third = second.next(1)
 
-print(first.builder_state_name())
-print(second.builder_state_name())
-print(third.builder_state_name())
+# print(first.builder_state_name())
+# print(second.builder_state_name())
+# print(third.builder_state_name())
