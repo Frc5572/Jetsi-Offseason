@@ -31,7 +31,7 @@ public class MoveToPose extends Command {
     private boolean isActive = false;
     private boolean isCompleted = false;
 
-    /** DO NOT USE THIS. Use {@link Swerve.moveToPose()} instead. */
+    /** DO NOT USE THIS. Use Swerve.moveToPose instead. */
     public MoveToPose(Swerve swerve, Consumer<ChassisSpeeds> robotRelativeConsumer,
         Supplier<Pose2d> pose2dSupplier, EventLoop eventLoop, DoubleSupplier maxSpeedSupplier,
         boolean flipForRed, double tol, double rTol) {
