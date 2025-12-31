@@ -8,6 +8,7 @@ import frc.robot.util.typestate.AltMethod;
 import frc.robot.util.typestate.RequiredField;
 import frc.robot.util.typestate.TypeStateBuilder;
 
+/** Constants for a camera */
 public class CameraConstants {
 
     public final String name;
@@ -21,6 +22,7 @@ public class CameraConstants {
     public final double calibrationErrorStdDev;
     public final Transform3d robotToCamera;
 
+    /** Constants for a camera */
     @TypeStateBuilder("CameraConstantsBuilder")
     public CameraConstants(@RequiredField String name, @RequiredField int height,
         @RequiredField int width,

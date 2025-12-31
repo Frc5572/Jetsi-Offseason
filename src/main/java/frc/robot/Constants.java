@@ -196,6 +196,7 @@ public final class Constants {
         // @formatter:on
     }
 
+    /** Vision Constants */
     public static final class Vision {
         // @formatter:off
         public static final CameraConstants[] cameraConstants = new CameraConstants[] {
