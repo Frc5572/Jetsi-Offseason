@@ -6,13 +6,15 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.studica.frc.AHRS.NavXComType;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.subsystems.swerve.mod.ModuleConstants;
 import frc.robot.subsystems.swerve.mod.ModuleConstantsBuilder;
+import frc.robot.subsystems.vision.CameraConstants;
+import frc.robot.subsystems.vision.CameraConstantsBuilder;
 
 /**
  * Constants file.
@@ -43,19 +45,15 @@ public final class Constants {
      * MoveToPos constants.
      */
     public static class SwerveTransformPID {
-        public static final double PID_XKP = 3.5;
-        public static final double PID_XKI = 0.0;
-        public static final double PID_XKD = 0.0;
-        public static final double PID_YKP = 3.5;
-        public static final double PID_YKI = 0.0;
-        public static final double PID_YKD = 0.0;
-        public static final double PID_TKP = 3.0;
-        public static final double PID_TKI = 0.0;
-        public static final double PID_TKD = 0.0;
+        public static final double translationP = 3.5;
+        public static final double translationI = 0.0;
+        public static final double translationD = 0.0;
+        public static final double rotationP = 3.0;
+        public static final double rotationI = 0.0;
+        public static final double rotationD = 0.0;
 
-        public static final double MAX_ANGULAR_VELOCITY = 9.0;
-        public static final double MAX_ANGULAR_ACCELERATION = 9 * 5;
-        public static final double STD_DEV_MOD = 2.0;
+        public static final double maxAngularVelocity = 9.0;
+        public static final double maxAngularAcceleration = 9 * 5;
     }
 
     /**
@@ -64,10 +62,6 @@ public final class Constants {
     public static final class Swerve {
         /** If true, motors and absolute encoders are on canivore loop. Otherwise on rio. */
         public static final boolean isCanviore = false;
-
-        public static final double AUTO_ROTATION_KP = 5.0;
-        public static final double AUTO_ROTATION_KI = 0.0;
-        public static final double AUTO_ROTATION_KD = 0.0;
 
         public static final NavXComType navXID = NavXComType.kMXP_SPI;
         public static final boolean invertGyro = true;
@@ -79,8 +73,6 @@ public final class Constants {
         public static final double wheelBase = Units.inchesToMeters(17.75);
         public static final Distance wheelDiameter = Inches.of(3.8);
         public static final Distance wheelCircumference = wheelDiameter.times(Math.PI);
-        public static final Translation2d MOD0_MODOFFSET =
-            new Translation2d(wheelBase / 2.0, trackWidth / 2.0);
         public static final Distance wheelRadius = wheelDiameter.div(2);
 
         public static final Distance bumperFront = Inches.of(30);
@@ -159,6 +151,7 @@ public final class Constants {
 
         public static final double odometryFrequency = 100.0;
 
+        /* Teleop limits */
         public static final double forwardLimit = 5.0;
         public static final double forwardTiltLimit = 5.0;
         public static final double leftTiltLimit = 5.0;
@@ -201,25 +194,24 @@ public final class Constants {
                 .finish(),
         };
         // @formatter:on
-
     }
 
-    /**
-     * Auto constants
-     */
-    public static final class AutoConstants {
-        public static final double kMaxSpeedMetersPerSecond = 3;
-        public static final double kMaxAccelerationMetersPerSecondSquared = 3;
-        public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
-        public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
-
-        public static final double kPXController = 1;
-        public static final double kPYController = 1;
-        public static final double kPThetaController = 1;
-
-        /* Constraint for the motion profilied robot angle controller */
-        public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
-            new TrapezoidProfile.Constraints(kMaxAngularSpeedRadiansPerSecond,
-                kMaxAngularSpeedRadiansPerSecondSquared);
+    public static final class Vision {
+        // @formatter:off
+        public static final CameraConstants[] cameraConstants = new CameraConstants[] {
+            new CameraConstantsBuilder()
+                .name("cam0")
+                .height(800)
+                .width(1280)
+                .horizontalFieldOfView(80)
+                .simFps(20)
+                .simLatency(0.3)
+                .simLatencyStdDev(0.02)
+                .calibrationErrorMean(0.8)
+                .calibrationErrorStdDev(0.08)
+                .robotToCamera(new Transform3d())
+                .finish(),
+        };
+        // @formatter:on
     }
 }

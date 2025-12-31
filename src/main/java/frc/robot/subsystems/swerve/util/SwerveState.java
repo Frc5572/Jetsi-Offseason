@@ -2,6 +2,7 @@ package frc.robot.subsystems.swerve.util;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import org.photonvision.targeting.PhotonPipelineResult;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
@@ -16,6 +17,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import frc.robot.Constants;
+import frc.robot.subsystems.vision.CameraConstants;
 
 /** State of the swerve drive */
 public class SwerveState {
@@ -67,7 +69,7 @@ public class SwerveState {
     }
 
     /** Update from photonvision (or other vision solution) */
-    public void addApriltagObservation(Pose3d cameraPose, Transform3d robotToCamera,
+    public void addVisionObservation(Pose3d cameraPose, Transform3d robotToCamera,
         double translationStdDev, double rotationStdDev, double timestamp) {
         try {
             if (poseBuffer.getInternalBuffer().lastKey() - poseBufferSizeSec > timestamp) {
@@ -108,6 +110,10 @@ public class SwerveState {
             Rotation2d.fromRadians(kTimesTransform.get(2, 0)));
 
         estimatedPose = estimateAtTime.plus(scaledTransform).plus(sampleToOdometryTransform);
+    }
+
+    public void addVisionObservation(CameraConstants camera, PhotonPipelineResult pipelineResult) {
+        // TODO
     }
 
     /** Get current best estimate of the swerve's global position */

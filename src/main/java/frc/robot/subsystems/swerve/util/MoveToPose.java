@@ -96,15 +96,15 @@ public class MoveToPose extends Command {
     }
 
     private static final HolonomicDriveController holonomicDriveController =
-        new HolonomicDriveController(
-            new PIDController(Constants.SwerveTransformPID.PID_XKP,
-                Constants.SwerveTransformPID.PID_XKI, Constants.SwerveTransformPID.PID_XKD),
-            new PIDController(Constants.SwerveTransformPID.PID_YKP,
-                Constants.SwerveTransformPID.PID_YKI, Constants.SwerveTransformPID.PID_YKD),
-            new ProfiledPIDController(Constants.SwerveTransformPID.PID_TKP,
-                Constants.SwerveTransformPID.PID_TKI, Constants.SwerveTransformPID.PID_TKD,
-                new Constraints(Constants.SwerveTransformPID.MAX_ANGULAR_VELOCITY,
-                    Constants.SwerveTransformPID.MAX_ANGULAR_ACCELERATION)));
+        new HolonomicDriveController(new PIDController(Constants.SwerveTransformPID.translationP,
+            Constants.SwerveTransformPID.translationI, Constants.SwerveTransformPID.translationD),
+            new PIDController(Constants.SwerveTransformPID.translationP,
+                Constants.SwerveTransformPID.translationI,
+                Constants.SwerveTransformPID.translationD),
+            new ProfiledPIDController(Constants.SwerveTransformPID.rotationP,
+                Constants.SwerveTransformPID.rotationI, Constants.SwerveTransformPID.rotationD,
+                new Constraints(Constants.SwerveTransformPID.maxAngularVelocity,
+                    Constants.SwerveTransformPID.maxAngularAcceleration)));
 
     private Pose2d target = Pose2d.kZero;
 

@@ -20,11 +20,11 @@ import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
 /** Simulation implementation for swerve */
 public class SwerveSim implements SwerveIO {
 
-    private final SwerveDriveSimulation sim;
+    public final SwerveDriveSimulation mapleSim;
 
     /** Simulation implementation for swerve */
     public SwerveSim(Pose2d initialPose) {
-        this.sim = new SwerveDriveSimulation(
+        this.mapleSim = new SwerveDriveSimulation(
             DriveTrainSimulationConfig.Default().withGyro(COTS.ofNav2X())
                 .withRobotMass(Pounds.of(150))
                 .withCustomModuleTranslations(Constants.Swerve.swerveTranslations)
@@ -45,12 +45,12 @@ public class SwerveSim implements SwerveIO {
 
     /** Supplier passed into Swerve constructor */
     public GyroIO gyroProvider(PhoenixOdometryThread odometryThread) {
-        return new GyroSim(this.sim.getGyroSimulation());
+        return new GyroSim(this.mapleSim.getGyroSimulation());
     }
 
     /** Supplier passed into Swerve constructor */
     public SwerveModuleIO moduleProvider(int index, PhoenixOdometryThread odometryThread) {
-        return new SwerveModuleSim(index, this.sim.getModules()[index]);
+        return new SwerveModuleSim(index, this.mapleSim.getModules()[index]);
     }
 
 
