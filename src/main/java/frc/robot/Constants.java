@@ -12,6 +12,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.subsystems.swerve.mod.ModuleConstants;
+import frc.robot.subsystems.swerve.mod.ModuleConstantsBuilder;
 
 /**
  * Constants file.
@@ -171,30 +172,33 @@ public final class Constants {
         // @formatter:off
         public static final ModuleConstants[] modulesConstants = new ModuleConstants[] {
             // Front Left Module
-            ModuleConstants
+            new ModuleConstantsBuilder()
                 .driveMotorId(6)
                 .angleMotorId(51)
                 .canCoderId(4)
-                .angleOffset(Rotation2d.fromRotations(-0.496826)),
+                .angleOffset(Rotation2d.fromRotations(-0.496826))
+                .finish(),
             // Front Right Module
-            ModuleConstants
+            new ModuleConstantsBuilder()
                 .driveMotorId(2)
                 .angleMotorId(40)
                 .canCoderId(2)
-                .angleOffset(Rotation2d.fromRotations(0.405518 + 0.5)),
+                .angleOffset(Rotation2d.fromRotations(0.405518 + 0.5))
+                .finish(),
             // Back Left Module
-            ModuleConstants
+            new ModuleConstantsBuilder()
                 .driveMotorId(3)
                 .angleMotorId(9)
                 .canCoderId(1)
-                .angleOffset(Rotation2d.fromRotations(0.348145)),
+                .angleOffset(Rotation2d.fromRotations(0.348145))
+                .finish(),
             // Back Right Module
-            ModuleConstants
+            new ModuleConstantsBuilder()
                 .driveMotorId(10)
                 .angleMotorId(8)
                 .canCoderId(10)
                 .angleOffset(Rotation2d.fromRotations(0.317627 + 0.5))
-
+                .finish(),
         };
         // @formatter:on
 
