@@ -113,7 +113,7 @@ public class SwerveState {
     }
 
     public void addVisionObservation(CameraConstants camera, PhotonPipelineResult pipelineResult) {
-        // TODO
+
     }
 
     /** Get current best estimate of the swerve's global position */
