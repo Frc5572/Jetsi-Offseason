@@ -38,12 +38,10 @@ public class RobotContainer {
 
         switch (runtimeType) {
             case kReal:
-                CheckList.setup_hooks();
                 sim = null;
                 swerve = new Swerve(SwerveReal::new, GyroNavX2::new, SwerveModuleReal::new);
                 break;
             case kSimulation:
-                CheckList.setup_hooks();
                 sim = new SwerveSim(new Pose2d(2.0, 2.0, Rotation2d.kZero));
                 swerve = new Swerve(sim::simProvider, sim::gyroProvider, sim::moduleProvider);
                 break;
