@@ -17,6 +17,11 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.util.AllianceFlipUtil;
+import frc.robot.util.typestate.AltMethod;
+import frc.robot.util.typestate.InitField;
+import frc.robot.util.typestate.OptionalField;
+import frc.robot.util.typestate.RequiredField;
+import frc.robot.util.typestate.TypeStateBuilder;
 
 /** Drive Swerve to a given pose. */
 public class MoveToPose extends Command {
@@ -36,9 +41,18 @@ public class MoveToPose extends Command {
     private boolean isCompleted = false;
 
     /** DO NOT USE THIS. Use Swerve.moveToPose instead. */
-    public MoveToPose(Swerve swerve, Consumer<ChassisSpeeds> robotRelativeConsumer,
-        Supplier<Pose2d> pose2dSupplier, AutoRoutine autoRoutine, DoubleSupplier maxSpeedSupplier,
-        boolean flipForRed, double tol, double rTol) {
+    @TypeStateBuilder("MoveToPoseBuilder")
+    public MoveToPose(@InitField Swerve swerve,
+        @InitField Consumer<ChassisSpeeds> robotRelativeConsumer,
+        @RequiredField(alt = @AltMethod(type = Pose2d.class, parameter_name = "targetConst",
+            value = "() -> targetConst")) Supplier<Pose2d> target,
+        @OptionalField("null") AutoRoutine autoRoutine,
+        @OptionalField(value = "() -> frc.robot.Constants.Swerve.autoMaxSpeed",
+            alt = @AltMethod(type = double.class, parameter_name = "maxSpeedConst",
+                value = "() -> maxSpeedConst")) DoubleSupplier maxSpeed,
+        @OptionalField("true") boolean flipForRed,
+        @OptionalField("0.5") double translationTolerance,
+        @OptionalField("edu.wpi.first.math.util.Units.degreesToRadians(5)") double rotationTolerance) {
         this.autoRoutine = autoRoutine;
         if (autoRoutine == null) {
             this.eventLoop = CommandScheduler.getInstance().getDefaultButtonLoop();
@@ -47,11 +61,11 @@ public class MoveToPose extends Command {
         }
         this.swerve = swerve;
         this.robotRelativeConsumer = robotRelativeConsumer;
-        this.pose2dSupplier = pose2dSupplier;
-        this.maxSpeedSupplier = maxSpeedSupplier;
+        this.pose2dSupplier = target;
+        this.maxSpeedSupplier = maxSpeed;
         this.flipForRed = flipForRed;
-        this.translationTolerance = tol;
-        this.rotationTolerance = rTol;
+        this.translationTolerance = translationTolerance;
+        this.rotationTolerance = rotationTolerance;
     }
 
     /**
