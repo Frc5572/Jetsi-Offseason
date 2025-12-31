@@ -5,6 +5,8 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.studica.frc.AHRS.NavXComType;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -198,6 +200,9 @@ public final class Constants {
 
     /** Vision Constants */
     public static final class Vision {
+        public static final AprilTagFieldLayout fieldLayout =
+            AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
+
         // @formatter:off
         public static final CameraConstants[] cameraConstants = new CameraConstants[] {
             new CameraConstantsBuilder()

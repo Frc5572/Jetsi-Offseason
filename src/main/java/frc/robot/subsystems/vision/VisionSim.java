@@ -20,6 +20,8 @@ public class VisionSim extends VisionReal {
         this.sim = sim.mapleSim;
         this.visionSim = new VisionSystemSim("main");
 
+        visionSim.addAprilTags(Constants.Vision.fieldLayout);
+
         var constants = Constants.Vision.cameraConstants;
         for (int i = 0; i < constants.length; i++) {
             SimCameraProperties props = new SimCameraProperties();

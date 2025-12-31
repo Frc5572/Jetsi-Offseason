@@ -46,10 +46,6 @@ public class CameraConstants {
         this.calibrationErrorMean = calibrationErrorMean;
         this.calibrationErrorStdDev = calibrationErrorStdDev;
         this.robotToCamera = robotToCamera;
-
-        edu.wpi.first.math.geometry.Rotation2d.fromDegrees(calibrationErrorStdDev);
-        edu.wpi.first.units.Units.Hertz.of(calibrationErrorStdDev);
-        edu.wpi.first.units.Units.Seconds.of(calibrationErrorStdDev);
     }
 
 
