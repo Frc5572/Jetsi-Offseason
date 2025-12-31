@@ -19,6 +19,7 @@ public class ModuleConstants {
     /** Reported angle when wheel is straight */
     public final Rotation2d angleOffset;
 
+    /** Per-module constants */
     @TypeStateBuilder("ModuleConstantsBuilder")
     public ModuleConstants(@RequiredField int driveMotorId, @RequiredField int angleMotorId,
         @RequiredField int canCoderId, @RequiredField Rotation2d angleOffset) {
