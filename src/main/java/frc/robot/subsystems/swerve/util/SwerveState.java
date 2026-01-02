@@ -22,6 +22,8 @@ import frc.robot.subsystems.vision.CameraConstants;
 /** State of the swerve drive */
 public class SwerveState {
 
+    private boolean initted = false;
+
     /** State of the swerve drive */
     public SwerveState(SwerveModulePosition[] wheelPositions) {
         this.lastWheelPositions = wheelPositions;
@@ -141,13 +143,24 @@ public class SwerveState {
             return;
         }
 
-        var mulitTag = pipelineResult.getMultiTagResult();
-        if (mulitTag.isPresent()) {
-            // Multi Tag
-
+        var multiTag = pipelineResult.getMultiTagResult();
+        if (!initted) {
+            multiTag.ifPresent(multiTag_ -> {
+                Transform3d best = multiTag_.estimatedPose.best;
+                Pose3d cameraPose =
+                    new Pose3d().plus(best).relativeTo(Constants.Vision.fieldLayout.getOrigin());
+                Pose3d robotPose = cameraPose.plus(camera.robotToCamera.inverse());
+                estimatedPose = robotPose.toPose2d();
+                initted = true;
+            });
         } else {
-            // Single Tag
+            if (multiTag.isPresent()) {
+                // Multi Tag
 
+            } else {
+                // Single Tag
+
+            }
         }
     }
 

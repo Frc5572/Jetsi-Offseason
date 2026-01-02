@@ -28,6 +28,9 @@ public class SwerveModuleSim implements SwerveModuleIO {
     private double driveAppliedVolts = 0.0;
     private double turnAppliedVolts = 0.0;
 
+    private double kV = 1.0;
+    private double targetVelocity = 0.0;
+
     /** Simulation implementation for Swerve Module */
     public SwerveModuleSim(int index, SwerveModuleSimulation modSim) {
         this.id = index;
@@ -51,8 +54,10 @@ public class SwerveModuleSim implements SwerveModuleIO {
                 driveAppliedVolts = 0.0;
                 driveController.reset();
             } else {
-                driveAppliedVolts = driveFFVolts + driveController.calculate(
-                    moduleSimulation.getDriveWheelFinalSpeed().in(Units.RadiansPerSecond));
+                driveAppliedVolts = driveFFVolts
+                    + driveController.calculate(
+                        moduleSimulation.getDriveWheelFinalSpeed().in(Units.RadiansPerSecond))
+                    + kV * targetVelocity;
             }
         } else {
             driveController.reset();
@@ -103,6 +108,7 @@ public class SwerveModuleSim implements SwerveModuleIO {
     public void runDriveVelocity(double velocityRadPerSec, double feedforward) {
         driveClosedLoop = true;
         driveController.setSetpoint(velocityRadPerSec);
+        targetVelocity = velocityRadPerSec;
     }
 
     @Override
