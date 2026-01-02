@@ -68,31 +68,19 @@ public class SwerveState {
         estimatedPose = estimatedPose.exp(finalTwist);
     }
 
-    /** Update from photonvision (or other vision solution) */
-    public void addVisionObservation(Pose3d cameraPose, Transform3d robotToCamera,
-        double translationStdDev, double rotationStdDev, double timestamp) {
-        try {
-            if (poseBuffer.getInternalBuffer().lastKey() - poseBufferSizeSec > timestamp) {
-                return;
-            }
-        } catch (NoSuchElementException ex) {
-            return;
-        }
+    private final Matrix<N3, N3> visionK = new Matrix<>(Nat.N3(), Nat.N3());
 
-        var sample = poseBuffer.getSample(timestamp);
-        if (sample.isEmpty()) {
-            return;
-        }
-
-        var sampleToOdometryTransform = new Transform2d(sample.get(), odometryPose);
-        var odometryToSampleTransform = new Transform2d(odometryPose, sample.get());
+    private void addVisionObservationImpl(Pose3d cameraPose, Pose2d sample,
+        Transform3d robotToCamera, double translationStdDev, double rotationStdDev,
+        double timestamp) {
+        var sampleToOdometryTransform = new Transform2d(sample, odometryPose);
+        var odometryToSampleTransform = new Transform2d(odometryPose, sample);
 
         Pose2d estimateAtTime = estimatedPose.plus(odometryToSampleTransform);
 
         // Calculate 3x3 vision matrix
         var r = new double[] {translationStdDev * translationStdDev,
             translationStdDev * translationStdDev, rotationStdDev * rotationStdDev};
-        Matrix<N3, N3> visionK = new Matrix<>(Nat.N3(), Nat.N3());
         for (int row = 0; row < 3; row++) {
             double stdDev = qStdDevs.get(row, 0);
             if (stdDev == 0) {
@@ -112,8 +100,55 @@ public class SwerveState {
         estimatedPose = estimateAtTime.plus(scaledTransform).plus(sampleToOdometryTransform);
     }
 
-    public void addVisionObservation(CameraConstants camera, PhotonPipelineResult pipelineResult) {
+    /** Update from photonvision (or other vision solution) */
+    public void addVisionObservation(Pose3d cameraPose, Transform3d robotToCamera,
+        double translationStdDev, double rotationStdDev, double timestamp) {
+        try {
+            if (poseBuffer.getInternalBuffer().lastKey() - poseBufferSizeSec > timestamp) {
+                return;
+            }
+        } catch (NoSuchElementException ex) {
+            return;
+        }
 
+        var sample = poseBuffer.getSample(timestamp);
+        if (sample.isEmpty()) {
+            return;
+        }
+
+        addVisionObservationImpl(cameraPose, sample.get(), robotToCamera, translationStdDev,
+            rotationStdDev, timestamp);
+    }
+
+    /** Update from photonvision */
+    public void addVisionObservation(CameraConstants camera, PhotonPipelineResult pipelineResult) {
+        if (!pipelineResult.hasTargets()) {
+            return;
+        }
+
+        double timestamp = pipelineResult.getTimestampSeconds();
+
+        try {
+            if (poseBuffer.getInternalBuffer().lastKey() - poseBufferSizeSec > timestamp) {
+                return;
+            }
+        } catch (NoSuchElementException ex) {
+            return;
+        }
+
+        var sample = poseBuffer.getSample(timestamp);
+        if (sample.isEmpty()) {
+            return;
+        }
+
+        var mulitTag = pipelineResult.getMultiTagResult();
+        if (mulitTag.isPresent()) {
+            // Multi Tag
+
+        } else {
+            // Single Tag
+
+        }
     }
 
     /** Get current best estimate of the swerve's global position */

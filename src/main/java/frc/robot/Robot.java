@@ -111,6 +111,8 @@ public class Robot extends LoggedRobot {
 
         PhoenixSignals.refreshAll();
 
+        robotContainer.periodic();
+
         CommandScheduler.getInstance().run();
         if (gcTimer.advanceIfElapsed(5)) {
             System.gc();

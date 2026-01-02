@@ -3,10 +3,12 @@ package frc.robot.subsystems.swerve;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.Volts;
+import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
+import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Timer;
@@ -18,7 +20,7 @@ import frc.robot.subsystems.swerve.mod.SwerveModuleSim;
 import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
 
 /** Simulation implementation for swerve */
-public class SwerveSim implements SwerveIO {
+public final class SwerveSim implements SwerveIO {
 
     public final SwerveDriveSimulation mapleSim;
 
@@ -35,6 +37,7 @@ public class SwerveSim implements SwerveIO {
                     Constants.Swerve.angleGearRatio, Volts.of(0.15), Volts.of(0.35),
                     Constants.Swerve.wheelRadius, KilogramSquareMeters.of(0.02), 1.2)),
             initialPose);
+        SimulatedArena.getInstance().addDriveTrainSimulation(this.mapleSim);
     }
 
 
@@ -53,10 +56,11 @@ public class SwerveSim implements SwerveIO {
         return new SwerveModuleSim(index, this.mapleSim.getModules()[index]);
     }
 
-
     @Override
     public void updateInputs(SwerveInputs inputs) {
         inputs.timestamps = new double[] {Timer.getTimestamp()};
+
+        Logger.recordOutput("/Viz/ActualPose", mapleSim.getSimulatedDriveTrainPose());
     }
 
 }

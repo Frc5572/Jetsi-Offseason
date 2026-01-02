@@ -4,7 +4,7 @@ import java.util.Queue;
 import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
 
 /** Real Swerve Implementation */
-public class SwerveReal implements SwerveIO {
+public final class SwerveReal implements SwerveIO {
 
     private final Queue<Double> timestampQueue;
 

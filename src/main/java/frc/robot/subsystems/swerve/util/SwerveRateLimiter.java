@@ -132,6 +132,7 @@ public class SwerveRateLimiter {
         CommonOps_DDF3.add(currentVel, wantedAcc, wantedVel);
 
         publish("resultant", wantedVel);
+        publish("resultantSpeed", Math.hypot(wantedVel.a1, wantedVel.a2));
 
         return new ChassisSpeeds(wantedVel.a1, wantedVel.a2, wantedVel.a3);
     }

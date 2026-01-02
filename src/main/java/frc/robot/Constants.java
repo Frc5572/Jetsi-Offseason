@@ -77,8 +77,8 @@ public final class Constants {
         public static final Distance wheelCircumference = wheelDiameter.times(Math.PI);
         public static final Distance wheelRadius = wheelDiameter.div(2);
 
-        public static final Distance bumperFront = Inches.of(30);
-        public static final Distance bumperRight = Inches.of(30);
+        public static final Distance bumperFront = Inches.of(15);
+        public static final Distance bumperRight = Inches.of(15);
 
         public static final Translation2d[] swerveTranslations =
             new Translation2d[] {new Translation2d(wheelBase / 2.0, trackWidth / 2.0),
@@ -154,12 +154,12 @@ public final class Constants {
         public static final double odometryFrequency = 100.0;
 
         /* Teleop limits */
-        public static final double forwardLimit = 5.0;
-        public static final double forwardTiltLimit = 5.0;
-        public static final double leftTiltLimit = 5.0;
-        public static final double rightTiltLimit = 5.0;
-        public static final double backTiltLimit = 5.0;
-        public static final double skidLimit = 5.0;
+        public static final double forwardLimit = 10.0;
+        public static final double forwardTiltLimit = 1000.0;
+        public static final double leftTiltLimit = 1000.0;
+        public static final double rightTiltLimit = 1000.0;
+        public static final double backTiltLimit = 1000.0;
+        public static final double skidLimit = 1000.0;
 
         /* Module Specific Constants */
 

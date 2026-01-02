@@ -1,5 +1,7 @@
 package frc.robot;
 
+import org.ironmaple.simulation.SimulatedArena;
+import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -23,7 +25,7 @@ import frc.robot.subsystems.swerve.util.TeleopControls;
  * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
  * subsystems, commands, and button mappings) should be declared here.
  */
-public class RobotContainer {
+public final class RobotContainer {
 
     /* Controllers */
     public final CommandXboxController driver = new CommandXboxController(Constants.DRIVER_ID);
@@ -64,4 +66,16 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {}
 
+    /** Runs once per 0.02 seconds. */
+    public void periodic() {
+        if (sim != null) {
+            SimulatedArena.getInstance().simulationPeriodic();
+            Logger.recordOutput("FieldSimulation/Algae",
+                SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
+            Logger.recordOutput("FieldSimulation/Coral",
+                SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
+        }
+
+        Logger.recordOutput("/Viz/GlobalEstPose", swerve.state.getGlobalPoseEstimate());
+    }
 }

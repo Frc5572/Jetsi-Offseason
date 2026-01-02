@@ -36,7 +36,7 @@ import frc.robot.subsystems.swerve.util.SwerveState;
 import frc.robot.util.AllianceFlipUtil;
 
 /** Swerve Subsystem */
-public class Swerve extends SubsystemBase {
+public final class Swerve extends SubsystemBase {
 
     private final Lock odometryLock = new ReentrantLock();
     private final PhoenixOdometryThread odometryThread;
