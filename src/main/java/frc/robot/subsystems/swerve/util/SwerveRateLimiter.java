@@ -11,8 +11,44 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.robot.Constants;
 
 /**
- * Limiter for better swerve controls (based on presentation from 1690:
- * https://www.youtube.com/watch?v=vUtVXz7ebEE)
+ * Applies rate limiting to robot-relative swerve chassis commands to ensure physically achievable,
+ * stable, and predictable motion.
+ *
+ * <p>
+ * This limiter constrains translational acceleration using a multi-stage process inspired by Team
+ * 1690’s swerve control methodology:
+ * <ul>
+ * <li>Limits forward acceleration based on current speed and remaining headroom to maximum
+ * velocity</li>
+ * <li>Clamps directional acceleration to prevent excessive robot tilt</li>
+ * <li>Caps overall acceleration magnitude to avoid wheel slip and skidding</li>
+ * </ul>
+ *
+ * <p>
+ * The limiter operates in discrete time (20&nbsp;ms control loop) and should be called once per
+ * cycle. The current robot velocity must be provided via {@link #update(ChassisSpeeds)} before
+ * calling {@link #limit(ChassisSpeeds)}.
+ *
+ * <p>
+ * All limits are exposed via NetworkTables under {@code /SwerveRateLimiter/*} and may be tuned at
+ * runtime. Diagnostic values are published to AdvantageKit logs for visualization and debugging.
+ *
+ * <p>
+ * Rotational velocity ({@code omegaRadiansPerSecond}) is passed through unchanged and is not
+ * subject to rate limiting.
+ *
+ * <p>
+ * <b>Usage pattern:</b>
+ *
+ * <pre>{@code
+ * limiter.update(currentRobotRelativeSpeeds);
+ * ChassisSpeeds safeSpeeds = limiter.limit(desiredSpeeds);
+ * }</pre>
+ *
+ * <p>
+ * Based on concepts presented by FRC Team 1690:
+ * <a href="https://www.youtube.com/watch?v=vUtVXz7ebEE">
+ * https://www.youtube.com/watch?v=vUtVXz7ebEE</a>
  */
 public class SwerveRateLimiter {
 
@@ -23,7 +59,14 @@ public class SwerveRateLimiter {
     private double backTiltLimit = Constants.Swerve.backTiltLimit;
     private double skidLimit = Constants.Swerve.skidLimit;
 
-    /** Limiter for better swerve controls */
+    /**
+     * Creates a new {@code SwerveRateLimiter} and publishes all acceleration limits to
+     * NetworkTables for live tuning.
+     *
+     * <p>
+     * Any updates received via NetworkTables will immediately modify the corresponding limit used
+     * by the rate limiter.
+     */
     public SwerveRateLimiter() {
         final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
         try {
@@ -48,7 +91,16 @@ public class SwerveRateLimiter {
         }
     }
 
-    /** Update current speed from odometry */
+    /**
+     * Updates the current robot-relative chassis velocity used as the basis for acceleration
+     * limiting.
+     *
+     * <p>
+     * This method should be called once per control loop using velocity data from odometry or state
+     * estimation before calling {@link #limit(ChassisSpeeds)}.
+     *
+     * @param robotRelative the current robot-relative chassis speeds
+     */
     public void update(ChassisSpeeds robotRelative) {
         currentVel.a1 = robotRelative.vxMetersPerSecond;
         currentVel.a2 = robotRelative.vyMetersPerSecond;
@@ -67,7 +119,34 @@ public class SwerveRateLimiter {
         Logger.recordOutput("SwerveRateLimiter/" + name, v);
     }
 
-    /** Calculate new chassis speeds that satisfy all limits */
+    /**
+     * Limits a desired robot-relative chassis velocity based on physical acceleration, tilt, and
+     * skid constraints, producing a safe and achievable {@link ChassisSpeeds}.
+     *
+     * <p>
+     * The limiting process operates in discrete time (20 ms) and applies several sequential
+     * constraints:
+     * <ol>
+     * <li><b>Physical acceleration limit:</b> Caps acceleration in the direction of current motion
+     * based on available traction and remaining headroom to max speed.</li>
+     * <li><b>Tilt prevention:</b> Restricts directional acceleration components to prevent
+     * excessive forward, backward, or lateral tilting.</li>
+     * <li><b>Skid prevention:</b> Limits the overall translational acceleration magnitude to avoid
+     * wheel slip.</li>
+     * </ol>
+     *
+     * <p>
+     * The resulting acceleration is integrated over one control loop period and added to the
+     * current velocity to produce the final commanded chassis speeds.
+     *
+     * <p>
+     * Rotational velocity ({@code omegaRadiansPerSecond}) is passed through unchanged and is not
+     * subject to acceleration limiting.
+     *
+     * @param wantedSpeedsRobotRelative the desired robot-relative chassis speeds (vx, vy, omega)
+     * @return a new {@link ChassisSpeeds} representing the limited, physically achievable
+     *         robot-relative velocities for the next control step
+     */
     public ChassisSpeeds limit(ChassisSpeeds wantedSpeedsRobotRelative) {
         double currentSpeed = Math.hypot(currentVel.a1, currentVel.a2);
         double wantedSpeed = Math.hypot(wantedSpeedsRobotRelative.vxMetersPerSecond,

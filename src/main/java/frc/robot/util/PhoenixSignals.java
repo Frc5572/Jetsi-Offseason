@@ -4,12 +4,36 @@ import java.util.function.Supplier;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 
-/** Consolidates all phoenix signals so we can query using the same synchronization fence. */
+/**
+ * Utility class that centralizes registration and synchronized refreshing of CTRE Phoenix
+ * {@link BaseStatusSignal}s.
+ *
+ * <p>
+ * Grouping signals and refreshing them together ensures that all sampled values share the same
+ * synchronization fence, minimizing timestamp skew between related measurements.
+ *
+ * <p>
+ * Signals are maintained in separate groups depending on whether they are sourced from a CANivore
+ * bus or the roboRIO CAN bus, as Phoenix requires refresh calls to be performed per bus.
+ *
+ * <p>
+ * This class is purely static and is not intended to be instantiated.
+ */
 public class PhoenixSignals {
 
     private PhoenixSignals() {}
 
-    /** Attempts to run the command until no error is produced. */
+    /**
+     * Repeatedly executes a Phoenix command until it succeeds or the maximum number of attempts is
+     * reached.
+     *
+     * <p>
+     * This is useful for Phoenix configuration calls that may transiently fail during startup or
+     * bus contention.
+     *
+     * @param maxAttempts maximum number of attempts before giving up
+     * @param command supplier that executes the Phoenix command and returns a {@link StatusCode}
+     */
     public static void tryUntilOk(int maxAttempts, Supplier<StatusCode> command) {
         for (int i = 0; i < maxAttempts; i++) {
             var error = command.get();
@@ -19,12 +43,30 @@ public class PhoenixSignals {
         }
     }
 
-    /** Signals for synchronized refresh. */
+    /** Signals registered on the CANivore bus for synchronized refresh. */
     private static BaseStatusSignal[] canivoreSignals = new BaseStatusSignal[0];
-
+    /** Signals registered on the roboRIO CAN bus for synchronized refresh. */
     private static BaseStatusSignal[] rioSignals = new BaseStatusSignal[0];
 
-    /** Registers a set of signals for synchronized refresh. */
+    /**
+     * Registers one or more Phoenix signals for synchronized refreshing.
+     *
+     * <p>
+     * All registered signals will be refreshed together when {@link #refreshAll()} is called,
+     * ensuring consistent timestamps across related measurements.
+     *
+     * <p>
+     * Signals must be registered to the correct bus (CANivore vs roboRIO). Mixing buses in a single
+     * refresh call is not supported by Phoenix.
+     *
+     * <p>
+     * This method should typically be called during subsystem construction or robot initialization,
+     * before periodic refreshes occur.
+     *
+     * @param canivore {@code true} if the signals are on the CANivore bus, {@code false} if they
+     *        are on the roboRIO CAN bus
+     * @param signals one or more {@link BaseStatusSignal}s to register
+     */
     public static void registerSignals(boolean canivore, BaseStatusSignal... signals) {
         if (canivore) {
             BaseStatusSignal[] newSignals =
@@ -41,7 +83,17 @@ public class PhoenixSignals {
         }
     }
 
-    /** Refresh all registered signals. */
+    /**
+     * Refreshes all registered Phoenix signals.
+     *
+     * <p>
+     * This method should be called once per control loop to update all registered signals in a
+     * synchronized manner.
+     *
+     * <p>
+     * Signals on the CANivore and roboRIO buses are refreshed separately, but each group is
+     * internally synchronized.
+     */
     public static void refreshAll() {
         if (canivoreSignals.length > 0) {
             BaseStatusSignal.refreshAll(canivoreSignals);

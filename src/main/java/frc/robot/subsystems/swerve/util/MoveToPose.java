@@ -23,7 +23,27 @@ import frc.robot.util.typestate.OptionalField;
 import frc.robot.util.typestate.RequiredField;
 import frc.robot.util.typestate.TypeStateBuilder;
 
-/** Drive Swerve to a given pose. */
+/**
+ * Command that drives a swerve drivetrain to a specified field-relative pose using a
+ * {@link HolonomicDriveController}.
+ *
+ * <p>
+ * This command continuously computes robot-relative chassis speeds that reduce translational and
+ * rotational error to a target {@link Pose2d}. The command finishes once the robot is within the
+ * specified translation and rotation tolerances.
+ *
+ * <p>
+ * The target pose may be supplied dynamically (e.g., from vision or an autonomous routine). An
+ * optional alliance-based pose flip can be applied automatically for red alliance operation.
+ *
+ * <p>
+ * Output chassis speeds are robot-relative and are clamped to a configurable maximum translational
+ * speed.
+ *
+ * <p>
+ * This command is typically created via {@code Swerve.moveToPose(...)} and should not be
+ * instantiated directly.
+ */
 public class MoveToPose extends Command {
 
     private final AutoRoutine autoRoutine;
@@ -40,7 +60,22 @@ public class MoveToPose extends Command {
     private boolean isActive = false;
     private boolean isCompleted = false;
 
-    /** DO NOT USE THIS. Use Swerve.moveToPose instead. */
+    /**
+     * Constructs a command that drives the robot to a target pose.
+     *
+     * <p>
+     * <b>Note:</b> This constructor is intended for use by generated builders. Prefer
+     * {@code Swerve.moveToPose(...)} when creating this command.
+     *
+     * @param swerve drivetrain subsystem providing pose estimation
+     * @param robotRelativeConsumer consumer that accepts robot-relative chassis speeds
+     * @param target supplier providing the desired field-relative target pose
+     * @param autoRoutine optional autonomous routine used to scope triggers
+     * @param maxSpeed supplier providing the maximum allowed translational speed (m/s)
+     * @param flipForRed whether to mirror the target pose for red alliance
+     * @param translationTolerance allowable positional error (meters)
+     * @param rotationTolerance allowable angular error (radians)
+     */
     @TypeStateBuilder("MoveToPoseBuilder")
     public MoveToPose(@InitField Swerve swerve,
         @InitField Consumer<ChassisSpeeds> robotRelativeConsumer,
@@ -69,9 +104,13 @@ public class MoveToPose extends Command {
     }
 
     /**
-     * Returns a trigger that is true while the trajectory is scheduled.
+     * Returns a trigger that is {@code true} while this command is actively running.
      *
-     * @return A trigger that is true while the trajectory is scheduled.
+     * <p>
+     * If associated with an {@link AutoRoutine}, the trigger is also gated by the routine's active
+     * state.
+     *
+     * @return trigger indicating whether the command is currently active
      */
     public Trigger active() {
         if (autoRoutine != null) {
@@ -82,8 +121,12 @@ public class MoveToPose extends Command {
     }
 
     /**
-     * Returns a trigger that is true when the trajectory is finished. This will return true on
-     * subsequent evaluations, until this command is restarted.
+     * Returns a trigger that becomes {@code true} once the command has completed successfully.
+     *
+     * <p>
+     * The trigger remains {@code true} until the command is restarted.
+     *
+     * @return trigger indicating completion of the command
      */
     public Trigger done() {
         return new Trigger(eventLoop, () -> this.isCompleted);

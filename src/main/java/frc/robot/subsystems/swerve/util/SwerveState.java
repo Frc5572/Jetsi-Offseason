@@ -19,12 +19,35 @@ import edu.wpi.first.math.numbers.N3;
 import frc.robot.Constants;
 import frc.robot.subsystems.vision.CameraConstants;
 
-/** State of the swerve drive */
+/**
+ * Maintains and updates the robot's estimated global pose for a swerve drive by fusing wheel
+ * odometry, gyro measurements, and delayed vision updates.
+ *
+ * <p>
+ * This class tracks two related poses:
+ * <ul>
+ * <li><b>Odometry pose</b> — derived purely from wheel encoder deltas and gyro yaw</li>
+ * <li><b>Estimated pose</b> — a filtered pose that incorporates vision corrections</li>
+ * </ul>
+ *
+ * <p>
+ * A time-interpolated pose buffer is maintained to allow vision measurements with latency to be
+ * applied retroactively at the correct timestamp.
+ *
+ * <p>
+ * This implementation resembles a lightweight pose estimator rather than a full Kalman filter,
+ * using configurable standard deviations to weight vision updates against odometry uncertainty.
+ */
 public class SwerveState {
 
+    /** Whether the pose estimator has been initialized from vision */
     private boolean initted = false;
 
-    /** State of the swerve drive */
+    /**
+     * Creates a new swerve state estimator.
+     *
+     * @param wheelPositions the initial swerve module positions used to seed odometry
+     */
     public SwerveState(SwerveModulePosition[] wheelPositions) {
         this.lastWheelPositions = wheelPositions;
 
@@ -33,25 +56,43 @@ public class SwerveState {
         }
     }
 
+    /** Length of time (in seconds) to retain pose history for vision replay */
     private static final double poseBufferSizeSec = 2.0;
+
+    /**
+     * Time-indexed buffer of past odometry poses used to compensate for vision processing latency.
+     */
     private final TimeInterpolatableBuffer<Pose2d> poseBuffer =
         TimeInterpolatableBuffer.createBuffer(poseBufferSizeSec);
 
+    /** Standard deviations of odometry state (x, y, theta) */
     private static final Matrix<N3, N1> odometryStateStdDevs =
         new Matrix<>(VecBuilder.fill(0.003, 0.003, 0.002));
+
+    /** Squared odometry state variances */
     private final Matrix<N3, N1> qStdDevs = new Matrix<>(Nat.N3(), Nat.N1());
 
+    /** Last recorded swerve module positions for computing deltas */
     private SwerveModulePosition[] lastWheelPositions =
         new SwerveModulePosition[] {new SwerveModulePosition(), new SwerveModulePosition(),
             new SwerveModulePosition(), new SwerveModulePosition()};
 
+    /** Pose obtained from pure odometry integration */
     private Pose2d odometryPose = new Pose2d();
+    /** Best current estimate of the robot pose after sensor fusion */
     private Pose2d estimatedPose = new Pose2d();
 
-    // Assume gyro starts at zero
+    /** Offset applied to gyro yaw to align it with field coordinates */
     private Rotation2d gyroOffset = Rotation2d.kZero;
 
-    /** Update from the modules and gyro */
+    /**
+     * Updates odometry and pose estimates using swerve module encoders and an optional gyro
+     * measurement.
+     *
+     * @param wheelPositions current swerve module positions
+     * @param gyroYaw current robot yaw, if available
+     * @param timestamp measurement timestamp in seconds
+     */
     public void addOdometryObservation(SwerveModulePosition[] wheelPositions,
         Optional<Rotation2d> gyroYaw, double timestamp) {
         Twist2d twist =
@@ -70,8 +111,16 @@ public class SwerveState {
         estimatedPose = estimatedPose.exp(finalTwist);
     }
 
+    /** Kalman-like gain matrix used for vision updates */
     private final Matrix<N3, N3> visionK = new Matrix<>(Nat.N3(), Nat.N3());
 
+    /**
+     * Applies a vision-based pose correction at a historical timestamp.
+     *
+     * <p>
+     * The correction is weighted based on provided vision measurement uncertainties and the current
+     * odometry uncertainty.
+     */
     private void addVisionObservationImpl(Pose3d cameraPose, Pose2d sample,
         Transform3d robotToCamera, double translationStdDev, double rotationStdDev,
         double timestamp) {
@@ -102,7 +151,18 @@ public class SwerveState {
         estimatedPose = estimateAtTime.plus(scaledTransform).plus(sampleToOdometryTransform);
     }
 
-    /** Update from photonvision (or other vision solution) */
+    /**
+     * Adds a vision measurement using an externally computed camera pose.
+     *
+     * <p>
+     * If the measurement timestamp is outside the pose buffer window, the update is ignored.
+     *
+     * @param cameraPose estimated camera pose in field coordinates
+     * @param robotToCamera transform from robot to camera frame
+     * @param translationStdDev translation measurement standard deviation (meters)
+     * @param rotationStdDev rotation measurement standard deviation (radians)
+     * @param timestamp measurement timestamp in seconds
+     */
     public void addVisionObservation(Pose3d cameraPose, Transform3d robotToCamera,
         double translationStdDev, double rotationStdDev, double timestamp) {
         try {
@@ -122,7 +182,16 @@ public class SwerveState {
             rotationStdDev, timestamp);
     }
 
-    /** Update from photonvision */
+    /**
+     * Adds a vision measurement from PhotonVision.
+     *
+     * <p>
+     * If the estimator has not yet been initialized, a valid multi-tag estimate will be used to
+     * seed the global pose.
+     *
+     * @param camera camera configuration constants
+     * @param pipelineResult latest PhotonVision pipeline result
+     */
     public void addVisionObservation(CameraConstants camera, PhotonPipelineResult pipelineResult) {
         if (!pipelineResult.hasTargets()) {
             return;
@@ -164,7 +233,11 @@ public class SwerveState {
         }
     }
 
-    /** Get current best estimate of the swerve's global position */
+    /**
+     * Returns the current best estimate of the robot's global field pose.
+     *
+     * @return estimated robot pose in field coordinates
+     */
     public Pose2d getGlobalPoseEstimate() {
         return estimatedPose;
     }
