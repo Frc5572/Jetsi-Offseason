@@ -9,7 +9,6 @@ import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 import org.jspecify.annotations.NullMarked;
-import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Timer;
@@ -61,8 +60,6 @@ public final class SwerveSim implements SwerveIO {
     @Override
     public void updateInputs(SwerveInputs inputs) {
         inputs.timestamps = new double[] {Timer.getTimestamp()};
-
-        Logger.recordOutput("Viz/ActualPose", mapleSim.getSimulatedDriveTrainPose());
     }
 
 }
