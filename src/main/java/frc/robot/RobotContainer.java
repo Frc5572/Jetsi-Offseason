@@ -20,6 +20,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIOEmpty;
 import frc.robot.subsystems.vision.VisionReal;
 import frc.robot.subsystems.vision.VisionSim;
+import frc.robot.util.DeviceDebug;
 import frc.robot.viz.RobotViz;
 
 
@@ -62,6 +63,8 @@ public final class RobotContainer {
                 vision = new Vision(swerve.state, new VisionIOEmpty());
         }
         viz = new RobotViz(sim, swerve);
+
+        DeviceDebug.initialize();
 
         swerve.setDefaultCommand(swerve.driveUserRelative(TeleopControls.teleopControls(
             () -> -driver.getLeftY(), () -> -driver.getLeftX(), () -> -driver.getRightX())));
