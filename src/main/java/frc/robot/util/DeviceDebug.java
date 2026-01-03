@@ -28,6 +28,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
  * </ul>
  *
  * <h2>Safety model</h2>
+ *
  * <p>
  * Debug functionality is gated behind an explicit NetworkTables boolean ({@code /Debug/Enable}) to
  * prevent accidental configuration changes during normal operation. Once enabled, the enable
