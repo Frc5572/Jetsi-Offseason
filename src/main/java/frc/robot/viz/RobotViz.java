@@ -15,7 +15,7 @@ import frc.robot.subsystems.swerve.SwerveSim;
  *
  * <p>
  * Currently, this class publishes visualization data related to drivetrain state, including the
- * robot’s global pose and derived camera poses.
+ * robot's global pose and derived camera poses.
  *
  * <p>
  * <b>Future intent:</b> This class is intended to become the single location responsible for
@@ -27,7 +27,7 @@ import frc.robot.subsystems.swerve.SwerveSim;
  * This class supports both real and simulated operation:
  * <ul>
  * <li>When a {@link SwerveSim} instance is provided, visualization data is sourced from the
- * simulator’s ground-truth drivetrain pose.</li>
+ * simulator's ground-truth drivetrain pose.</li>
  * <li>Otherwise, certain entries with keys indicating ground truth use estimates instead, often
  * duplicating other entries (e.g. {@code ActualPose} will be equivalent to
  * {@code GlobalEstPose}).</li>

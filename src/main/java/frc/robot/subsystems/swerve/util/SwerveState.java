@@ -27,8 +27,8 @@ import frc.robot.subsystems.vision.CameraConstants;
  * <p>
  * This class tracks two related poses:
  * <ul>
- * <li><b>Odometry pose</b> — derived purely from wheel encoder deltas and gyro yaw</li>
- * <li><b>Estimated pose</b> — a filtered pose that incorporates vision corrections</li>
+ * <li><b>Odometry pose</b> - derived purely from wheel encoder deltas and gyro yaw</li>
+ * <li><b>Estimated pose</b> - a filtered pose that incorporates vision corrections</li>
  * </ul>
  *
  * <p>

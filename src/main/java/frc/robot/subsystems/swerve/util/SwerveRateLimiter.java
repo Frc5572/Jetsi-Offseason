@@ -17,7 +17,7 @@ import frc.robot.Constants;
  *
  * <p>
  * This limiter constrains translational acceleration using a multi-stage process inspired by Team
- * 1690’s swerve control methodology:
+ * 1690's swerve control methodology:
  * <ul>
  * <li>Limits forward acceleration based on current speed and remaining headroom to maximum
  * velocity</li>

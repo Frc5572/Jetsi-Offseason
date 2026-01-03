@@ -25,9 +25,9 @@ import frc.robot.Constants;
  * <p>
  * Two categories of signals may be registered:
  * <ul>
- * <li><b>Phoenix signals</b> — {@link StatusSignal} instances that can be synchronized and
+ * <li><b>Phoenix signals</b> - {@link StatusSignal} instances that can be synchronized and
  * timestamped by the CTRE Phoenix framework</li>
- * <li><b>Generic signals</b> — arbitrary {@link DoubleSupplier}s sampled at the same rate as
+ * <li><b>Generic signals</b> - arbitrary {@link DoubleSupplier}s sampled at the same rate as
  * Phoenix signals</li>
  * </ul>
  *
