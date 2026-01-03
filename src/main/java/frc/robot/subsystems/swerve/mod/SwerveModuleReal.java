@@ -24,6 +24,7 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants;
 import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
+import frc.robot.util.DeviceDebug;
 import frc.robot.util.PhoenixSignals;
 
 /** Real swerve module implementation (assumes two TalonFXs) */
@@ -106,6 +107,10 @@ public class SwerveModuleReal implements SwerveModuleIO {
         PhoenixSignals.registerSignals(isCanivore, drivePosition, driveVelocity, driveAppliedVolts,
             driveSupplyCurrentAmps, driveStatorCurrentAmps, anglePosition, angleVelocity,
             angleAppliedVolts, angleSupplyCurrentAmps, angleStatorCurrentAmps, absolutePosition);
+
+        DeviceDebug.register("SwerveModule_" + index + "_Drive", driveMotor);
+        DeviceDebug.register("SwerveModule_" + index + "_Angle", angleMotor);
+        DeviceDebug.register("SwerveModule_" + index + "_Encoder", absoluteEncoder);
     }
 
     private void configDriveMotor() {
