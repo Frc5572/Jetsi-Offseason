@@ -1,5 +1,6 @@
 package frc.robot.subsystems.vision;
 
+import org.jspecify.annotations.NullMarked;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.units.measure.Frequency;
@@ -9,6 +10,7 @@ import frc.robot.util.typestate.RequiredField;
 import frc.robot.util.typestate.TypeStateBuilder;
 
 /** Constants for a camera */
+@NullMarked
 public class CameraConstants {
 
     public final String name;

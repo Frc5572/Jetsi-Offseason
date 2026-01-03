@@ -1,5 +1,6 @@
 package frc.robot.util;
 
+import org.jspecify.annotations.NullMarked;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -7,6 +8,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 
 /** Utilities for flipping based on alliance */
+@NullMarked
 public class AllianceFlipUtil {
     public static double fieldWidth = Units.feetToMeters(26.0) + Units.inchesToMeters(5.0);
     public static double fieldLength = Units.feetToMeters(57.0) + Units.inchesToMeters(6.875);

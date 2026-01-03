@@ -1,6 +1,7 @@
 package frc.robot.subsystems.swerve.mod;
 
 import static edu.wpi.first.units.Units.Meters;
+import org.jspecify.annotations.NullMarked;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -9,6 +10,7 @@ import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 
 /** Swerve Module */
+@NullMarked
 public class SwerveModule {
 
     private final String inputsName;

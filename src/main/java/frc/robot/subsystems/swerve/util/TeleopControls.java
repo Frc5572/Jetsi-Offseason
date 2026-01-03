@@ -2,11 +2,13 @@ package frc.robot.subsystems.swerve.util;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import org.jspecify.annotations.NullMarked;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.robot.Constants;
 
 /** Control scheme for teleoperated swerve */
+@NullMarked
 public class TeleopControls {
 
     /** Get desired Chassis Speeds (pseudo-field relative) from user inputs */

@@ -1,6 +1,7 @@
 package frc.robot;
 
 import org.ironmaple.simulation.SimulatedArena;
+import org.jspecify.annotations.NullMarked;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -19,6 +20,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIOEmpty;
 import frc.robot.subsystems.vision.VisionReal;
 import frc.robot.subsystems.vision.VisionSim;
+import frc.robot.viz.RobotViz;
 
 
 /**
@@ -27,6 +29,7 @@ import frc.robot.subsystems.vision.VisionSim;
  * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
  * subsystems, commands, and button mappings) should be declared here.
  */
+@NullMarked
 public final class RobotContainer {
 
     /* Controllers */
@@ -37,11 +40,11 @@ public final class RobotContainer {
     private final Vision vision;
 
     private final SwerveSim sim;
+    private final RobotViz viz;
 
     /**
      */
     public RobotContainer(RobotRunType runtimeType) {
-
         switch (runtimeType) {
             case kReal:
                 sim = null;
@@ -58,6 +61,7 @@ public final class RobotContainer {
                 swerve = new Swerve(SwerveIOEmpty::new, GyroIOEmpty::new, SwerveModuleIOEmpty::new);
                 vision = new Vision(swerve.state, new VisionIOEmpty());
         }
+        viz = new RobotViz(sim, swerve);
 
         swerve.setDefaultCommand(swerve.driveUserRelative(TeleopControls.teleopControls(
             () -> -driver.getLeftY(), () -> -driver.getLeftX(), () -> -driver.getRightX())));
@@ -74,7 +78,6 @@ public final class RobotContainer {
             Logger.recordOutput("FieldSimulation/Coral",
                 SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
         }
-
-        Logger.recordOutput("/Viz/GlobalEstPose", swerve.state.getGlobalPoseEstimate());
+        viz.periodic();
     }
 }

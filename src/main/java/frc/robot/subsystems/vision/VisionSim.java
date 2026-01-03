@@ -3,6 +3,7 @@ package frc.robot.subsystems.vision;
 import static edu.wpi.first.units.Units.Hertz;
 import static edu.wpi.first.units.Units.Milliseconds;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.jspecify.annotations.NullMarked;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
@@ -10,6 +11,7 @@ import frc.robot.Constants;
 import frc.robot.subsystems.swerve.SwerveSim;
 
 /** Simulation of vision using built-in PhotonVision simulator. */
+@NullMarked
 public class VisionSim extends VisionReal {
 
     private final SwerveDriveSimulation sim;

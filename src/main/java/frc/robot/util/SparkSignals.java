@@ -5,6 +5,7 @@ import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import org.jspecify.annotations.NullMarked;
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkBase;
 
@@ -25,6 +26,7 @@ import com.revrobotics.spark.SparkBase;
  * <p>
  * This class is purely static and is not intended to be instantiated.
  */
+@NullMarked
 public class SparkSignals {
 
     private SparkSignals() {}

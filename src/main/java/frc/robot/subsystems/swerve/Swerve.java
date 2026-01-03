@@ -12,6 +12,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
+import org.jspecify.annotations.NullMarked;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -36,6 +37,7 @@ import frc.robot.subsystems.swerve.util.SwerveState;
 import frc.robot.util.AllianceFlipUtil;
 
 /** Swerve Subsystem */
+@NullMarked
 public final class Swerve extends SubsystemBase {
 
     private final Lock odometryLock = new ReentrantLock();

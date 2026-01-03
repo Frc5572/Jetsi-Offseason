@@ -3,6 +3,7 @@ package frc.robot.subsystems.swerve.util;
 import java.util.EnumSet;
 import org.ejml.data.DMatrix3;
 import org.ejml.dense.fixed.CommonOps_DDF3;
+import org.jspecify.annotations.NullMarked;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -50,6 +51,7 @@ import frc.robot.Constants;
  * <a href="https://www.youtube.com/watch?v=vUtVXz7ebEE">
  * https://www.youtube.com/watch?v=vUtVXz7ebEE</a>
  */
+@NullMarked
 public class SwerveRateLimiter {
 
     private double forwardLimit = Constants.Swerve.forwardLimit;

@@ -3,6 +3,8 @@ package frc.robot.subsystems.swerve.util;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import choreo.auto.AutoRoutine;
 import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
@@ -44,6 +46,7 @@ import frc.robot.util.typestate.TypeStateBuilder;
  * This command is typically created via {@code Swerve.moveToPose(...)} and should not be
  * instantiated directly.
  */
+@NullMarked
 public class MoveToPose extends Command {
 
     private final AutoRoutine autoRoutine;
@@ -81,7 +84,7 @@ public class MoveToPose extends Command {
         @InitField Consumer<ChassisSpeeds> robotRelativeConsumer,
         @RequiredField(alt = @AltMethod(type = Pose2d.class, parameter_name = "targetConst",
             value = "() -> targetConst")) Supplier<Pose2d> target,
-        @OptionalField("null") AutoRoutine autoRoutine,
+        @OptionalField("null") @Nullable AutoRoutine autoRoutine,
         @OptionalField(value = "() -> frc.robot.Constants.Swerve.autoMaxSpeed",
             alt = @AltMethod(type = double.class, parameter_name = "maxSpeedConst",
                 value = "() -> maxSpeedConst")) DoubleSupplier maxSpeed,

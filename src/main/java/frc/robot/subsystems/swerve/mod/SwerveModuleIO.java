@@ -1,5 +1,6 @@
 package frc.robot.subsystems.swerve.mod;
 
+import org.jspecify.annotations.NullMarked;
 import org.littletonrobotics.junction.AutoLog;
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
@@ -7,6 +8,7 @@ import frc.robot.util.GenerateEmptyIO;
 
 /** IO for swerve module */
 @GenerateEmptyIO({int.class, PhoenixOdometryThread.class})
+@NullMarked
 public interface SwerveModuleIO {
 
     /** Inputs for swerve module */

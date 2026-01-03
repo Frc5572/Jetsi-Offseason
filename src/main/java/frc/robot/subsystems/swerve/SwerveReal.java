@@ -1,9 +1,11 @@
 package frc.robot.subsystems.swerve;
 
 import java.util.Queue;
+import org.jspecify.annotations.NullMarked;
 import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
 
 /** Real Swerve Implementation */
+@NullMarked
 public final class SwerveReal implements SwerveIO {
 
     private final Queue<Double> timestampQueue;

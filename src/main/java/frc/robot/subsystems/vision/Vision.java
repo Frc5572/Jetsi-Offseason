@@ -3,6 +3,7 @@ package frc.robot.subsystems.vision;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
+import org.jspecify.annotations.NullMarked;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.targeting.PhotonPipelineResult;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -13,6 +14,7 @@ import frc.robot.subsystems.swerve.util.SwerveState;
 import frc.robot.util.Tuples.Tuple2;
 
 /** Vision Subsystem */
+@NullMarked
 public class Vision extends SubsystemBase {
 
     private final VisionIO io;

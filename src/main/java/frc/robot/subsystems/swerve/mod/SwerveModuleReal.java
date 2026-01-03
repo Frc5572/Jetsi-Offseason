@@ -3,6 +3,7 @@ package frc.robot.subsystems.swerve.mod;
 import java.util.Queue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import org.jspecify.annotations.NullMarked;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -26,6 +27,7 @@ import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
 import frc.robot.util.PhoenixSignals;
 
 /** Real swerve module implementation (assumes two TalonFXs) */
+@NullMarked
 public class SwerveModuleReal implements SwerveModuleIO {
 
     // Drive Motor and Signals

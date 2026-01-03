@@ -1,10 +1,12 @@
 package frc.robot.subsystems.swerve.mod;
 
+import org.jspecify.annotations.NullMarked;
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.util.typestate.RequiredField;
 import frc.robot.util.typestate.TypeStateBuilder;
 
 /** Per-module constants */
+@NullMarked
 public class ModuleConstants {
 
     /** CAN ID for the drive motor */

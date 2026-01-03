@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -24,8 +26,8 @@ import frc.robot.util.PhoenixSignals;
 /**
  * Runs tasks on Roborio in this file.
  */
+@NullMarked
 public class Robot extends LoggedRobot {
-    @SuppressWarnings("unused")
     private RobotContainer robotContainer;
 
     /**
@@ -105,15 +107,15 @@ public class Robot extends LoggedRobot {
      * This runs after the mode specific periodic functions, but before LiveWindow and
      * SmartDashboard integrated updating.
      */
-
     @Override
     public void robotPeriodic() {
 
         PhoenixSignals.refreshAll();
 
+        CommandScheduler.getInstance().run();
+
         robotContainer.periodic();
 
-        CommandScheduler.getInstance().run();
         if (gcTimer.advanceIfElapsed(5)) {
             System.gc();
         }
@@ -125,33 +127,21 @@ public class Robot extends LoggedRobot {
     @Override
     public void disabledPeriodic() {}
 
-    /**
-     * This autonomous runs the autonomous command selected by your {@link RobotContainer} class.
-     */
     @Override
     public void autonomousInit() {}
 
-    /** This function is called periodically during autonomous. */
     @Override
     public void autonomousPeriodic() {}
 
     @Override
     public void teleopInit() {}
 
-    /** This function is called periodically during operator control. */
     @Override
-    public void teleopPeriodic() {
-        // robotContainer.elevatorWrist.setWristPower(robotContainer.driver.getRightY() * 0.2);
-        // vision.update();
-    }
+    public void teleopPeriodic() {}
 
     @Override
-    public void testInit() {
-        // Cancels all running commands at the start of test mode.
-        CommandScheduler.getInstance().cancelAll();
-    }
+    public void testInit() {}
 
-    /** This function is called periodically during test mode. */
     @Override
     public void testPeriodic() {}
 
@@ -167,7 +157,7 @@ public class Robot extends LoggedRobot {
      * "AKIT_LOG_PATH" environment variable, if set 2. The file currently open in AdvantageScope, if
      * available 3. The result of the prompt displayed to the user
      */
-    public static String findReplayLog() {
+    public static @Nullable String findReplayLog() {
         // Read environment variables
         String envPath = System.getenv(environmentVariable);
         if (envPath != null) {

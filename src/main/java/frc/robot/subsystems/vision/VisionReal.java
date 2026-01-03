@@ -1,11 +1,13 @@
 package frc.robot.subsystems.vision;
 
 import java.util.Arrays;
+import org.jspecify.annotations.NullMarked;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import frc.robot.Constants;
 
 /** PhotonVision-attached implementation */
+@NullMarked
 public class VisionReal implements VisionIO {
 
     protected final PhotonCamera[] cameras;

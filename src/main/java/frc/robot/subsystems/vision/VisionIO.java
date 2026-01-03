@@ -1,6 +1,7 @@
 package frc.robot.subsystems.vision;
 
 import java.util.Optional;
+import org.jspecify.annotations.NullMarked;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 import org.photonvision.common.dataflow.structures.Packet;
@@ -14,6 +15,7 @@ import frc.robot.util.GenerateEmptyIO;
 
 /** IO Class for Vision */
 @GenerateEmptyIO
+@NullMarked
 public interface VisionIO {
 
     /** Inputs for an individual camera */

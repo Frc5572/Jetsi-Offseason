@@ -2,6 +2,7 @@ package frc.robot.subsystems.swerve.util;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import org.jspecify.annotations.NullMarked;
 import org.photonvision.targeting.PhotonPipelineResult;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -38,6 +39,7 @@ import frc.robot.subsystems.vision.CameraConstants;
  * This implementation resembles a lightweight pose estimator rather than a full Kalman filter,
  * using configurable standard deviations to weight vision updates against odometry uncertainty.
  */
+@NullMarked
 public class SwerveState {
 
     /** Whether the pose estimator has been initialized from vision */

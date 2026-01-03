@@ -1,6 +1,7 @@
 package frc.robot.util;
 
 import java.util.function.Supplier;
+import org.jspecify.annotations.NullMarked;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 
@@ -19,6 +20,7 @@ import com.ctre.phoenix6.StatusCode;
  * <p>
  * This class is purely static and is not intended to be instantiated.
  */
+@NullMarked
 public class PhoenixSignals {
 
     private PhoenixSignals() {}

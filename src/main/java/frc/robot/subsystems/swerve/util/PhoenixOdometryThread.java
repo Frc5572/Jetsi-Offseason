@@ -7,6 +7,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.DoubleSupplier;
+import org.jspecify.annotations.NullMarked;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
@@ -44,6 +45,7 @@ import frc.robot.Constants;
  * <p>
  * The thread runs as a daemon and will terminate automatically when the JVM exits.
  */
+@NullMarked
 public class PhoenixOdometryThread extends Thread {
 
     /** Lock shared with odometry consumers to ensure consistent sampling */
