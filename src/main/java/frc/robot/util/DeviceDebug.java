@@ -38,11 +38,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
  * This class is <b>not thread-safe</b> and is expected to be initialized and used during robot
  * startup before devices are actively commanded.
  *
- * <h2>Currently supported debug features</h2>
- * <ul>
- * <li>TalonFX neutral mode (Brake / Coast)</li>
- * </ul>
- *
  * <p>
  * Support for additional device types and parameters (e.g. CANcoders, current limits, inversion,
  * soft limits) may be added in the future.
