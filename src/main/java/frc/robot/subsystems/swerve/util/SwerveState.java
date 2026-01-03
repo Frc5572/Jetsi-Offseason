@@ -1,8 +1,10 @@
 package frc.robot.subsystems.swerve.util;
 
+import static edu.wpi.first.units.Units.Seconds;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.jspecify.annotations.NullMarked;
+import org.littletonrobotics.junction.Logger;
 import org.photonvision.targeting.PhotonPipelineResult;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -14,6 +16,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -113,6 +116,25 @@ public class SwerveState {
         estimatedPose = estimatedPose.exp(finalTwist);
     }
 
+    private ChassisSpeeds currentSpeeds;
+
+    /**
+     * Updates the robot's current chassis speeds.
+     *
+     * <p>
+     * This method records the most recent robot-relative {@link ChassisSpeeds} command or measured
+     * velocity. The stored speeds may be used by future pose estimation or vision fusion logic to
+     * account for motion during sensor latency or to improve prediction accuracy.
+     *
+     * <p>
+     * This method does not directly affect the current pose estimate.
+     *
+     * @param speeds the current robot-relative chassis speeds
+     */
+    public void updateSpeeds(ChassisSpeeds speeds) {
+        currentSpeeds = speeds;
+    }
+
     /** Kalman-like gain matrix used for vision updates */
     private final Matrix<N3, N3> visionK = new Matrix<>(Nat.N3(), Nat.N3());
 
@@ -149,6 +171,7 @@ public class SwerveState {
             transform.getRotation().getRadians()));
         var scaledTransform = new Transform2d(kTimesTransform.get(0, 0), kTimesTransform.get(1, 0),
             Rotation2d.fromRadians(kTimesTransform.get(2, 0)));
+        Logger.recordOutput("State/CorrectionAmount", scaledTransform.getTranslation().getNorm());
 
         estimatedPose = estimateAtTime.plus(scaledTransform).plus(sampleToOdometryTransform);
     }
@@ -225,9 +248,22 @@ public class SwerveState {
                 initted = true;
             });
         } else {
+            double translationSpeed =
+                Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
+            double rotationSpeed = Math.abs(currentSpeeds.omegaRadiansPerSecond);
+            double velocityStdDev = camera.simLatencyStdDev.in(Seconds);
+            double velocityTranslationError = translationSpeed * velocityStdDev;
+            double velocityRotationError = rotationSpeed * velocityStdDev;
+            Logger.recordOutput("State/velocityTranslationError", velocityTranslationError);
+            Logger.recordOutput("State/velocityRotationError", velocityRotationError);
             if (multiTag.isPresent()) {
                 // Multi Tag
-
+                Transform3d best = multiTag.get().estimatedPose.best;
+                Pose3d cameraPose =
+                    new Pose3d().plus(best).relativeTo(Constants.Vision.fieldLayout.getOrigin());
+                addVisionObservationImpl(cameraPose, sample.get(), camera.robotToCamera,
+                    velocityTranslationError + camera.translationError,
+                    velocityRotationError + camera.rotationError, timestamp);
             } else {
                 // Single Tag
 

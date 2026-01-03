@@ -216,6 +216,7 @@ public final class Constants {
                 .calibrationErrorMean(0.8)
                 .calibrationErrorStdDev(0.08)
                 .robotToCamera(new Transform3d())
+                .translationError(0.02)
                 .finish(),
         };
         // @formatter:on

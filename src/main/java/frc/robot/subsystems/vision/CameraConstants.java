@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.units.measure.Frequency;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.util.typestate.AltMethod;
+import frc.robot.util.typestate.OptionalField;
 import frc.robot.util.typestate.RequiredField;
 import frc.robot.util.typestate.TypeStateBuilder;
 
@@ -23,6 +24,8 @@ public class CameraConstants {
     public final double calibrationErrorMean;
     public final double calibrationErrorStdDev;
     public final Transform3d robotToCamera;
+    public final double translationError;
+    public final double rotationError;
 
     /** Constants for a camera */
     @TypeStateBuilder("CameraConstantsBuilder")
@@ -37,7 +40,8 @@ public class CameraConstants {
         @RequiredField(alt = @AltMethod(type = double.class, parameter_name = "seconds",
             value = "edu.wpi.first.units.Units.Seconds.of(seconds)")) Time simLatencyStdDev,
         @RequiredField double calibrationErrorMean, @RequiredField double calibrationErrorStdDev,
-        @RequiredField Transform3d robotToCamera) {
+        @RequiredField Transform3d robotToCamera, @OptionalField("0.3") double translationError,
+        @OptionalField("edu.wpi.first.math.util.Units.degreesToRadians(3)") double rotationError) {
         this.name = name;
         this.height = height;
         this.width = width;
@@ -48,6 +52,8 @@ public class CameraConstants {
         this.calibrationErrorMean = calibrationErrorMean;
         this.calibrationErrorStdDev = calibrationErrorStdDev;
         this.robotToCamera = robotToCamera;
+        this.translationError = translationError;
+        this.rotationError = rotationError;
     }
 
 
