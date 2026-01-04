@@ -78,7 +78,7 @@ public class SwerveState {
      *
      * <p>
      * This method forces the underlying swerve odometry to the specified pose, effectively
-     * redefining the robot’s position on the field. It should be used when the robot pose is known
+     * redefining the robot's position on the field. It should be used when the robot pose is known
      * with high confidence, such as:
      * <ul>
      * <li>At the start of autonomous</li>

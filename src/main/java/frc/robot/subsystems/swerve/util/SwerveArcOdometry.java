@@ -13,7 +13,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
  * rather than straight-line approximations.
  *
  * <p>
- * Inspired by Team 1690, this odometry model treats each swerve module’s motion between updates as
+ * Inspired by Team 1690, this odometry model treats each swerve module's motion between updates as
  * an arc defined by the change in wheel angle and distance traveled. This more accurately
  * represents real swerve motion, especially during simultaneous translation and rotation, where
  * straight-line assumptions can introduce measurable integration error.
@@ -76,7 +76,7 @@ public final class SwerveArcOdometry extends SwerveDriveOdometry {
      *
      * @param previousWheelPosition the module position at the previous update
      * @param currentWheelPosition the module position at the current update
-     * @return the module’s displacement in the robot-relative frame
+     * @return the module's displacement in the robot-relative frame
      */
     private static Translation2d getModuleDisplacement(SwerveModulePosition previousWheelPosition,
         SwerveModulePosition currentWheelPosition) {
@@ -98,7 +98,7 @@ public final class SwerveArcOdometry extends SwerveDriveOdometry {
         // previous
         // angle. The previous module translation is (0, 0) because we don't care where it starts,
         // only
-        // the displacement. It is also always perpendicular to the preivous angle, with
+        // the displacement. It is also always perpendicular to the previous angle, with
         // positive/negative radius indicating which side of the module that the circle center will
         // be
         // on
