@@ -73,7 +73,7 @@ public final class RobotContainer {
         driver.y().onTrue(swerve.setFieldRelativeOffset());
     }
 
-    /** Runs once per 0.02 seconds. */
+    /** Runs once per 0.02 seconds after subsystems and commands. */
     public void periodic() {
         if (sim != null) {
             SimulatedArena.getInstance().simulationPeriodic();
