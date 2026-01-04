@@ -24,7 +24,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.vision.CameraConstants;
@@ -58,8 +57,6 @@ public class SwerveState {
 
     private final TimeInterpolatableBuffer<Rotation2d> rotationBuffer =
         TimeInterpolatableBuffer.createBuffer(1.5);
-
-    private double visionCutoff = 0;
 
     /**
      * Creates a new swerve state estimator.
@@ -101,7 +98,6 @@ public class SwerveState {
      */
     public void resetPose(Pose2d pose) {
         this.visionAdjustedOdometry.resetPose(pose);
-        visionCutoff = Timer.getFPGATimestamp();
         rotationBuffer.clear();
         rotationBuffer.getInternalBuffer().clear();
     }
@@ -174,6 +170,27 @@ public class SwerveState {
         double correction = after.getTranslation().getDistance(before.getTranslation());
         Logger.recordOutput("State/Correction", correction);
         Logger.recordOutput("State/VisionRobotPose", robotPose);
+    }
+
+    /**
+     * Forcibly initializes the pose estimator using a known robot pose.
+     *
+     * <p>
+     * This method sets the internal odometry/estimator state directly and marks the estimator as
+     * initialized, bypassing the normal vision-based initialization path. It is intended for
+     * situations where a trusted global pose is already known (for example, at the start of
+     * autonomous) or when a vision needs to be tested on a non-compliant field (for example, the
+     * practice field at district events).
+     *
+     * <p>
+     * After this method is called, subsequent vision updates will be treated as corrections rather
+     * than initialization measurements.
+     *
+     * @param pose the known robot pose in field coordinates to initialize the estimator with
+     */
+    public void overrideInit(Pose2d pose) {
+        visionAdjustedOdometry.resetPose(pose);
+        initted = true;
     }
 
     /**
