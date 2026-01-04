@@ -13,7 +13,26 @@ import frc.robot.Constants;
 import frc.robot.subsystems.swerve.util.SwerveState;
 import frc.robot.util.Tuples.Tuple2;
 
-/** Vision Subsystem */
+/**
+ * Vision subsystem responsible for processing camera-based pose observations and contributing
+ * vision measurements to the drivetrain pose estimator.
+ *
+ * <p>
+ * This subsystem acts as a bridge between one or more vision pipelines (e.g. PhotonVision) and the
+ * {@link SwerveState} pose estimator.
+ *
+ * <h2>Timestamp handling</h2> Vision measurements are frequently delayed relative to the control
+ * loop. This subsystem ensures measurements are applied in chronological order so that the pose
+ * estimator can correctly replay history using its internal pose buffer.
+ *
+ * <h2>Multiple cameras</h2> The subsystem supports an arbitrary number of cameras, each with its
+ * own calibration and transform defined in {@link Constants.Vision#cameraConstants}. All cameras
+ * contribute measurements into a single shared pose estimate.
+ *
+ * <h2>Visualization</h2> For debugging and analysis, the subsystem publishes 3D visualization data
+ * showing the relationship between the robot, cameras, and observed AprilTags. This data is
+ * intended for tools such as AdvantageScope and is not used for control.
+ */
 @NullMarked
 public class Vision extends SubsystemBase {
 
@@ -24,7 +43,12 @@ public class Vision extends SubsystemBase {
     private final Translation3d[][] cameraViz;
     private final String[] cameraVizKeys;
 
-    /** Vision Subsystem */
+    /**
+     * Creates the vision subsystem.
+     *
+     * @param state shared swerve pose estimator to receive vision updates
+     * @param io vision IO implementation responsible for acquiring camera results
+     */
     public Vision(SwerveState state, VisionIO io) {
         super("Vision");
         this.io = io;

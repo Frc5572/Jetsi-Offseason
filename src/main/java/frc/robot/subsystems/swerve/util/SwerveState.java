@@ -1,17 +1,21 @@
 package frc.robot.subsystems.swerve.util;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.jspecify.annotations.NullMarked;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Twist2d;
@@ -20,6 +24,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 import frc.robot.subsystems.vision.CameraConstants;
 
@@ -264,9 +269,14 @@ public class SwerveState {
                 addVisionObservationImpl(cameraPose, sample.get(), camera.robotToCamera,
                     velocityTranslationError + camera.translationError,
                     velocityRotationError + camera.rotationError, timestamp);
-            } else {
+            } else if (rotationSpeed < Units.degreesToRadians(3)) {
                 // Single Tag
-
+                PhotonTrackedTarget target = pipelineResult.getBestTarget();
+                double distance = target.getBestCameraToTarget().getTranslation().getNorm();
+                Rotation3d targetInCameraFrame = new Rotation3d(Radians.of(0.0),
+                    Degrees.of(target.getPitch()), Degrees.of(target.getYaw()));
+                Rotation3d cameraRotationInWorldFrame =
+                    new Pose3d(getGlobalPoseEstimate()).plus(camera.robotToCamera).getRotation();
             }
         }
     }
