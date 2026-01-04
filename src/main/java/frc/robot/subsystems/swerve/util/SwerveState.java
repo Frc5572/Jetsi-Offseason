@@ -152,27 +152,6 @@ public class SwerveState {
     }
 
     /**
-     * Adds a vision measurement using an externally computed camera pose.
-     *
-     * @param cameraPose estimated camera pose in field coordinates
-     * @param robotToCamera transform from robot to camera frame
-     * @param translationStdDev translation measurement standard deviation (meters)
-     * @param rotationStdDev rotation measurement standard deviation (radians)
-     * @param timestamp measurement timestamp in seconds
-     */
-    public void addVisionObservation(Pose3d cameraPose, Transform3d robotToCamera,
-        double translationStdDev, double rotationStdDev, double timestamp) {
-        Pose2d robotPose = cameraPose.plus(robotToCamera.inverse()).toPose2d();
-        Pose2d before = visionAdjustedOdometry.getEstimatedPosition();
-        visionAdjustedOdometry.addVisionMeasurement(robotPose, timestamp,
-            VecBuilder.fill(translationStdDev, translationStdDev, rotationStdDev));
-        Pose2d after = visionAdjustedOdometry.getEstimatedPosition();
-        double correction = after.getTranslation().getDistance(before.getTranslation());
-        Logger.recordOutput("State/Correction", correction);
-        Logger.recordOutput("State/VisionRobotPose", robotPose);
-    }
-
-    /**
      * Forcibly initializes the pose estimator using a known robot pose.
      *
      * <p>
@@ -191,6 +170,27 @@ public class SwerveState {
     public void overrideInit(Pose2d pose) {
         visionAdjustedOdometry.resetPose(pose);
         initted = true;
+    }
+
+    /**
+     * Adds a vision measurement using an externally computed camera pose.
+     *
+     * @param cameraPose estimated camera pose in field coordinates
+     * @param robotToCamera transform from robot to camera frame
+     * @param translationStdDev translation measurement standard deviation (meters)
+     * @param rotationStdDev rotation measurement standard deviation (radians)
+     * @param timestamp measurement timestamp in seconds
+     */
+    public void addVisionObservation(Pose3d cameraPose, Transform3d robotToCamera,
+        double translationStdDev, double rotationStdDev, double timestamp) {
+        Pose2d robotPose = cameraPose.plus(robotToCamera.inverse()).toPose2d();
+        Pose2d before = visionAdjustedOdometry.getEstimatedPosition();
+        visionAdjustedOdometry.addVisionMeasurement(robotPose, timestamp,
+            VecBuilder.fill(translationStdDev, translationStdDev, rotationStdDev));
+        Pose2d after = visionAdjustedOdometry.getEstimatedPosition();
+        double correction = after.getTranslation().getDistance(before.getTranslation());
+        Logger.recordOutput("State/Correction", correction);
+        Logger.recordOutput("State/VisionRobotPose", robotPose);
     }
 
     /**
