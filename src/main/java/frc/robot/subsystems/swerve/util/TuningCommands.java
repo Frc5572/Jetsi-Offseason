@@ -125,6 +125,43 @@ public final class TuningCommands {
                 }));
     }
 
+    /**
+     * Creates a command to characterize the effective wheel radius of the drivetrain.
+     *
+     * <p>
+     * This routine estimates wheel radius by rotating the robot in place and comparing the
+     * integrated gyro rotation against the average wheel travel. The wheel radius is computed using
+     * the relationship:
+     *
+     * <pre>
+     * wheelRadius = (robotRotation * driveBaseRadius) / wheelTravel
+     * </pre>
+     *
+     * <p>
+     * The command runs two sequences in parallel:
+     * <ul>
+     * <li>A drive sequence that smoothly accelerates rotational speed</li>
+     * <li>A measurement sequence that integrates gyro rotation and wheel deltas</li>
+     * </ul>
+     *
+     * <p>
+     * Intermediate values and the computed wheel radius are logged continuously for validation and
+     * offline analysis.
+     *
+     * <p>
+     * This routine assumes:
+     * <ul>
+     * <li>Accurate gyro measurements</li>
+     * <li>Consistent wheel traction during rotation</li>
+     * <li>Correct drivetrain geometry constants</li>
+     * </ul>
+     *
+     * @param swerve the swerve subsystem being characterized
+     * @param setModuleStates consumer used to command rotational chassis speeds
+     * @param getWheelRadiusCharacterizationPositions supplier of wheel position measurements
+     * @param gyroYaw supplier of the current robot yaw angle
+     * @return a command that performs wheel radius characterization
+     */
     public static Command wheelRadiusCharacterization(Swerve swerve,
         Consumer<ChassisSpeeds> setModuleStates,
         Supplier<double[]> getWheelRadiusCharacterizationPositions, Supplier<Rotation2d> gyroYaw) {
