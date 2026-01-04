@@ -91,8 +91,8 @@ public class SwerveState {
      * does <b>not</b> update any associated simulation state or drivetrain model.
      *
      * <p>
-     * Most code should prefer {@link Swerve#overridePose(Pose2d)} when resetting the robot pose, as
-     * that method ensures both the estimator and any simulated drivetrain pose remain consistent.
+     * Most code should prefer {@link Swerve#overridePose} when resetting the robot pose, as that
+     * method ensures both the estimator and any simulated drivetrain pose remain consistent.
      *
      * <p>
      * Future odometry and vision updates will be applied relative to this new pose.
