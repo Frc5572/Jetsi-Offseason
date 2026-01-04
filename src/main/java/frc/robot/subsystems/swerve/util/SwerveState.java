@@ -3,29 +3,30 @@ package frc.robot.subsystems.swerve.util;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
-import java.util.NoSuchElementException;
+import java.util.List;
 import java.util.Optional;
 import org.jspecify.annotations.NullMarked;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
+import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.vision.CameraConstants;
 
 /**
@@ -53,47 +54,73 @@ public class SwerveState {
     /** Whether the pose estimator has been initialized from vision */
     private boolean initted = false;
 
+    private final PoseEstimator<SwerveModulePosition[]> visionAdjustedOdometry;
+
+    private final TimeInterpolatableBuffer<Rotation2d> rotationBuffer =
+        TimeInterpolatableBuffer.createBuffer(1.5);
+
+    private double visionCutoff = 0;
+
     /**
      * Creates a new swerve state estimator.
      *
      * @param wheelPositions the initial swerve module positions used to seed odometry
      */
-    public SwerveState(SwerveModulePosition[] wheelPositions) {
-        this.lastWheelPositions = wheelPositions;
-
-        for (int i = 0; i < 3; ++i) {
-            qStdDevs.set(i, 0, Math.pow(odometryStateStdDevs.get(i, 0), 2));
-        }
+    public SwerveState(SwerveModulePosition[] wheelPositions, Rotation2d gyroYaw) {
+        SwerveDriveOdometry swerveOdometry =
+            new SwerveArcOdometry(Constants.Swerve.swerveKinematics, gyroYaw, wheelPositions);
+        visionAdjustedOdometry = new PoseEstimator<>(Constants.Swerve.swerveKinematics,
+            swerveOdometry, VecBuilder.fill(0.1, 0.1, 0.1), VecBuilder.fill(0.9, 0.9, 0.9));
     }
 
-    /** Length of time (in seconds) to retain pose history for vision replay */
-    private static final double poseBufferSizeSec = 2.0;
-
     /**
-     * Time-indexed buffer of past odometry poses used to compensate for vision processing latency.
+     * Resets the internal pose estimate to a known field pose.
+     *
+     * <p>
+     * This method forces the underlying swerve odometry to the specified pose, effectively
+     * redefining the robot’s position on the field. It should be used when the robot pose is known
+     * with high confidence, such as:
+     * <ul>
+     * <li>At the start of autonomous</li>
+     * <li>After a field-aligned reset</li>
+     * <li>Following a trusted vision-based localization event</li>
+     * </ul>
+     *
+     * <p>
+     * This method updates only the pose estimator / odometry state owned by {@code SwerveState}. It
+     * does <b>not</b> update any associated simulation state or drivetrain model.
+     *
+     * <p>
+     * Most code should prefer {@link Swerve#overridePose(Pose2d)} when resetting the robot pose, as
+     * that method ensures both the estimator and any simulated drivetrain pose remain consistent.
+     *
+     * <p>
+     * Future odometry and vision updates will be applied relative to this new pose.
+     *
+     * @param pose the desired robot pose in field coordinates
      */
-    private final TimeInterpolatableBuffer<Pose2d> poseBuffer =
-        TimeInterpolatableBuffer.createBuffer(poseBufferSizeSec);
+    public void resetPose(Pose2d pose) {
+        this.visionAdjustedOdometry.resetPose(pose);
+        visionCutoff = Timer.getFPGATimestamp();
+        rotationBuffer.clear();
+        rotationBuffer.getInternalBuffer().clear();
+    }
 
-    /** Standard deviations of odometry state (x, y, theta) */
-    private static final Matrix<N3, N1> odometryStateStdDevs =
-        new Matrix<>(VecBuilder.fill(0.003, 0.003, 0.002));
+    private Optional<Rotation2d> sampleRotationAt(double timestampSeconds) {
+        if (rotationBuffer.getInternalBuffer().isEmpty()) {
+            return Optional.empty();
+        }
 
-    /** Squared odometry state variances */
-    private final Matrix<N3, N1> qStdDevs = new Matrix<>(Nat.N3(), Nat.N1());
+        double oldestOdometryTimestamp = rotationBuffer.getInternalBuffer().firstKey();
+        double newestOdometryTimestamp = rotationBuffer.getInternalBuffer().lastKey();
+        if (oldestOdometryTimestamp > timestampSeconds) {
+            return Optional.empty();
+        }
+        timestampSeconds =
+            MathUtil.clamp(timestampSeconds, oldestOdometryTimestamp, newestOdometryTimestamp);
 
-    /** Last recorded swerve module positions for computing deltas */
-    private SwerveModulePosition[] lastWheelPositions =
-        new SwerveModulePosition[] {new SwerveModulePosition(), new SwerveModulePosition(),
-            new SwerveModulePosition(), new SwerveModulePosition()};
-
-    /** Pose obtained from pure odometry integration */
-    private Pose2d odometryPose = new Pose2d();
-    /** Best current estimate of the robot pose after sensor fusion */
-    private Pose2d estimatedPose = new Pose2d();
-
-    /** Offset applied to gyro yaw to align it with field coordinates */
-    private Rotation2d gyroOffset = Rotation2d.kZero;
+        return rotationBuffer.getSample(timestampSeconds);
+    }
 
     /**
      * Updates odometry and pose estimates using swerve module encoders and an optional gyro
@@ -103,22 +130,10 @@ public class SwerveState {
      * @param gyroYaw current robot yaw, if available
      * @param timestamp measurement timestamp in seconds
      */
-    public void addOdometryObservation(SwerveModulePosition[] wheelPositions,
-        Optional<Rotation2d> gyroYaw, double timestamp) {
-        Twist2d twist =
-            Constants.Swerve.swerveKinematics.toTwist2d(lastWheelPositions, wheelPositions);
-        lastWheelPositions = wheelPositions;
-        Pose2d lastOdometryPose = odometryPose;
-        odometryPose = odometryPose.exp(twist);
-
-        gyroYaw.ifPresent(gyroAngle -> {
-            odometryPose = new Pose2d(odometryPose.getTranslation(), gyroAngle.plus(gyroOffset));
-        });
-
-        poseBuffer.addSample(timestamp, odometryPose);
-
-        Twist2d finalTwist = lastOdometryPose.log(odometryPose);
-        estimatedPose = estimatedPose.exp(finalTwist);
+    public void addOdometryObservation(SwerveModulePosition[] wheelPositions, Rotation2d gyroYaw,
+        double timestamp) {
+        rotationBuffer.addSample(timestamp, gyroYaw);
+        visionAdjustedOdometry.update(gyroYaw, wheelPositions);
     }
 
     private ChassisSpeeds currentSpeeds;
@@ -140,52 +155,8 @@ public class SwerveState {
         currentSpeeds = speeds;
     }
 
-    /** Kalman-like gain matrix used for vision updates */
-    private final Matrix<N3, N3> visionK = new Matrix<>(Nat.N3(), Nat.N3());
-
-    /**
-     * Applies a vision-based pose correction at a historical timestamp.
-     *
-     * <p>
-     * The correction is weighted based on provided vision measurement uncertainties and the current
-     * odometry uncertainty.
-     */
-    private void addVisionObservationImpl(Pose3d cameraPose, Pose2d sample,
-        Transform3d robotToCamera, double translationStdDev, double rotationStdDev,
-        double timestamp) {
-        var sampleToOdometryTransform = new Transform2d(sample, odometryPose);
-        var odometryToSampleTransform = new Transform2d(odometryPose, sample);
-
-        Pose2d estimateAtTime = estimatedPose.plus(odometryToSampleTransform);
-
-        // Calculate 3x3 vision matrix
-        var r = new double[] {translationStdDev * translationStdDev,
-            translationStdDev * translationStdDev, rotationStdDev * rotationStdDev};
-        for (int row = 0; row < 3; row++) {
-            double stdDev = qStdDevs.get(row, 0);
-            if (stdDev == 0) {
-                visionK.set(row, row, 0.0);
-            } else {
-                visionK.set(row, row, stdDev / (stdDev + Math.sqrt(stdDev * r[row])));
-            }
-        }
-
-        Transform2d transform = new Transform2d(estimateAtTime, cameraPose.toPose2d());
-
-        var kTimesTransform = visionK.times(VecBuilder.fill(transform.getX(), transform.getY(),
-            transform.getRotation().getRadians()));
-        var scaledTransform = new Transform2d(kTimesTransform.get(0, 0), kTimesTransform.get(1, 0),
-            Rotation2d.fromRadians(kTimesTransform.get(2, 0)));
-        Logger.recordOutput("State/CorrectionAmount", scaledTransform.getTranslation().getNorm());
-
-        estimatedPose = estimateAtTime.plus(scaledTransform).plus(sampleToOdometryTransform);
-    }
-
     /**
      * Adds a vision measurement using an externally computed camera pose.
-     *
-     * <p>
-     * If the measurement timestamp is outside the pose buffer window, the update is ignored.
      *
      * @param cameraPose estimated camera pose in field coordinates
      * @param robotToCamera transform from robot to camera frame
@@ -195,21 +166,14 @@ public class SwerveState {
      */
     public void addVisionObservation(Pose3d cameraPose, Transform3d robotToCamera,
         double translationStdDev, double rotationStdDev, double timestamp) {
-        try {
-            if (poseBuffer.getInternalBuffer().lastKey() - poseBufferSizeSec > timestamp) {
-                return;
-            }
-        } catch (NoSuchElementException ex) {
-            return;
-        }
-
-        var sample = poseBuffer.getSample(timestamp);
-        if (sample.isEmpty()) {
-            return;
-        }
-
-        addVisionObservationImpl(cameraPose, sample.get(), robotToCamera, translationStdDev,
-            rotationStdDev, timestamp);
+        Pose2d robotPose = cameraPose.plus(robotToCamera.inverse()).toPose2d();
+        Pose2d before = visionAdjustedOdometry.getEstimatedPosition();
+        visionAdjustedOdometry.addVisionMeasurement(robotPose, timestamp,
+            VecBuilder.fill(translationStdDev, translationStdDev, rotationStdDev));
+        Pose2d after = visionAdjustedOdometry.getEstimatedPosition();
+        double correction = after.getTranslation().getDistance(before.getTranslation());
+        Logger.recordOutput("State/Correction", correction);
+        Logger.recordOutput("State/VisionRobotPose", robotPose);
     }
 
     /**
@@ -222,26 +186,8 @@ public class SwerveState {
      * @param camera camera configuration constants
      * @param pipelineResult latest PhotonVision pipeline result
      */
-    public void addVisionObservation(CameraConstants camera, PhotonPipelineResult pipelineResult) {
-        if (!pipelineResult.hasTargets()) {
-            return;
-        }
-
-        double timestamp = pipelineResult.getTimestampSeconds();
-
-        try {
-            if (poseBuffer.getInternalBuffer().lastKey() - poseBufferSizeSec > timestamp) {
-                return;
-            }
-        } catch (NoSuchElementException ex) {
-            return;
-        }
-
-        var sample = poseBuffer.getSample(timestamp);
-        if (sample.isEmpty()) {
-            return;
-        }
-
+    public boolean addVisionObservation(CameraConstants camera,
+        PhotonPipelineResult pipelineResult) {
         var multiTag = pipelineResult.getMultiTagResult();
         if (!initted) {
             multiTag.ifPresent(multiTag_ -> {
@@ -249,9 +195,10 @@ public class SwerveState {
                 Pose3d cameraPose =
                     new Pose3d().plus(best).relativeTo(Constants.Vision.fieldLayout.getOrigin());
                 Pose3d robotPose = cameraPose.plus(camera.robotToCamera.inverse());
-                estimatedPose = robotPose.toPose2d();
+                visionAdjustedOdometry.resetPose(robotPose.toPose2d());
                 initted = true;
             });
+            return initted;
         } else {
             double translationSpeed =
                 Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
@@ -266,19 +213,82 @@ public class SwerveState {
                 Transform3d best = multiTag.get().estimatedPose.best;
                 Pose3d cameraPose =
                     new Pose3d().plus(best).relativeTo(Constants.Vision.fieldLayout.getOrigin());
-                addVisionObservationImpl(cameraPose, sample.get(), camera.robotToCamera,
-                    velocityTranslationError + camera.translationError,
-                    velocityRotationError + camera.rotationError, timestamp);
+                double stdDevMultiplier = stdDevMultiplier(pipelineResult.targets, cameraPose);
+                double translationStdDev =
+                    stdDevMultiplier * velocityTranslationError + camera.translationError;
+                double rotationStdDev =
+                    stdDevMultiplier * velocityRotationError + camera.rotationError;
+                Logger.recordOutput("State/stdDevMultipler", stdDevMultiplier);
+                Logger.recordOutput("State/stdDevTranslation", translationStdDev);
+                Logger.recordOutput("State/stdDevRotation", rotationStdDev);
+                addVisionObservation(cameraPose, camera.robotToCamera, translationStdDev,
+                    rotationStdDev, pipelineResult.getTimestampSeconds());
+                return true;
             } else if (rotationSpeed < Units.degreesToRadians(3)) {
                 // Single Tag
                 PhotonTrackedTarget target = pipelineResult.getBestTarget();
+                if (target == null) {
+                    return false;
+                }
+                Optional<Rotation2d> yawSample =
+                    sampleRotationAt(pipelineResult.getTimestampSeconds());
+                if (!yawSample.isPresent()) {
+                    return false;
+                }
+                Optional<Pose3d> maybePose =
+                    Constants.Vision.fieldLayout.getTagPose(target.getFiducialId());
+                if (!maybePose.isPresent()) {
+                    return false;
+                }
                 double distance = target.getBestCameraToTarget().getTranslation().getNorm();
                 Rotation3d targetInCameraFrame = new Rotation3d(Radians.of(0.0),
-                    Degrees.of(target.getPitch()), Degrees.of(target.getYaw()));
+                    Degrees.of(-target.getPitch()), Degrees.of(-target.getYaw()));
                 Rotation3d cameraRotationInWorldFrame =
-                    new Pose3d(getGlobalPoseEstimate()).plus(camera.robotToCamera).getRotation();
+                    camera.robotToCamera.getRotation().rotateBy(new Rotation3d(yawSample.get()));
+                Translation3d debugTranslation =
+                    new Pose3d(getGlobalPoseEstimate()).plus(camera.robotToCamera).getTranslation();
+                Logger.recordOutput("State/singleTagCameraRotationInWorldFrame",
+                    new Pose3d(debugTranslation, cameraRotationInWorldFrame));
+                Rotation3d targetRotationInWorldFrame =
+                    targetInCameraFrame.plus(cameraRotationInWorldFrame);
+                Logger.recordOutput("State/singleTagTargetRotationInWorldFrame",
+                    new Pose3d(debugTranslation, targetRotationInWorldFrame));
+                Translation3d cameraToTargetInWorldFrame =
+                    new Translation3d(distance, targetRotationInWorldFrame);
+                Logger.recordOutput("State/singleTagTargetVector", new Translation3d[] {
+                    debugTranslation, debugTranslation.plus(cameraToTargetInWorldFrame)});
+                Translation2d cameraPosition = maybePose.get().getTranslation()
+                    .minus(cameraToTargetInWorldFrame).toTranslation2d();
+                Pose3d cameraPose = new Pose3d(cameraPosition.getX(), cameraPosition.getY(),
+                    camera.robotToCamera.getZ(), cameraRotationInWorldFrame);
+                Logger.recordOutput("State/singleTagCameraPose", cameraPose);
+                double stdDevMultiplier = stdDevMultiplier(pipelineResult.targets, cameraPose);
+                double translationStdDev =
+                    stdDevMultiplier * camera.singleTagError + velocityTranslationError;
+                Logger.recordOutput("State/stdDevMultipler", stdDevMultiplier);
+                Logger.recordOutput("State/stdDevTranslation", translationStdDev);
+                addVisionObservation(cameraPose, camera.robotToCamera, translationStdDev,
+                    Double.POSITIVE_INFINITY, pipelineResult.getTimestampSeconds());
+                return true;
             }
         }
+        return false;
+    }
+
+    private static double stdDevMultiplier(List<PhotonTrackedTarget> targets, Pose3d cameraPose) {
+        double totalDistance = 0.0;
+        int count = 0;
+        for (var tag : targets) {
+            var maybeTagPose = Constants.Vision.fieldLayout.getTagPose(tag.getFiducialId());
+            if (maybeTagPose.isPresent()) {
+                var tagPose = maybeTagPose.get();
+                totalDistance += tagPose.getTranslation().getDistance(cameraPose.getTranslation());
+                count++;
+            }
+        }
+        double avgDistance = totalDistance / count;
+        double stddev = Math.pow(avgDistance, 2.0) / count;
+        return stddev;
     }
 
     /**
@@ -287,7 +297,7 @@ public class SwerveState {
      * @return estimated robot pose in field coordinates
      */
     public Pose2d getGlobalPoseEstimate() {
-        return estimatedPose;
+        return visionAdjustedOdometry.getEstimatedPosition();
     }
 
 }

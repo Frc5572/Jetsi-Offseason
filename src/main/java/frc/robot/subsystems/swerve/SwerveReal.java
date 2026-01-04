@@ -2,6 +2,7 @@ package frc.robot.subsystems.swerve;
 
 import java.util.Queue;
 import org.jspecify.annotations.NullMarked;
+import edu.wpi.first.math.geometry.Pose2d;
 import frc.robot.subsystems.swerve.util.PhoenixOdometryThread;
 
 /** Real Swerve Implementation */
@@ -20,5 +21,8 @@ public final class SwerveReal implements SwerveIO {
         inputs.timestamps = this.timestampQueue.stream().mapToDouble(x -> x).toArray();
         this.timestampQueue.clear();
     }
+
+    @Override
+    public void resetPose(Pose2d pose) {}
 
 }

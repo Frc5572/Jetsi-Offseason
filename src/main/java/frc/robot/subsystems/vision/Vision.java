@@ -42,6 +42,8 @@ public class Vision extends SubsystemBase {
     private final SwerveState state;
     private final Translation3d[][] cameraViz;
     private final String[] cameraVizKeys;
+    private final boolean[] cameraContributed;
+    private final String[] cameraContributedKeys;
 
     /**
      * Creates the vision subsystem.
@@ -61,6 +63,9 @@ public class Vision extends SubsystemBase {
             .mapToObj((_x) -> new Translation3d[0]).toArray(Translation3d[][]::new);
         this.cameraVizKeys = IntStream.range(0, Constants.Vision.cameraConstants.length)
             .mapToObj((i) -> "Vision/AprilTagViz_" + i).toArray(String[]::new);
+        this.cameraContributed = new boolean[Constants.Vision.cameraConstants.length];
+        this.cameraContributedKeys = IntStream.range(0, Constants.Vision.cameraConstants.length)
+            .mapToObj((i) -> "Vision/Contributed_" + i).toArray(String[]::new);
     }
 
     @Override
@@ -89,7 +94,8 @@ public class Vision extends SubsystemBase {
         }
 
         for (var result : results) {
-            state.addVisionObservation(Constants.Vision.cameraConstants[result._0()], result._1());
+            cameraContributed[result._0()] = state
+                .addVisionObservation(Constants.Vision.cameraConstants[result._0()], result._1());
             for (int i = 0; i < result._1().targets.size(); i++) {
                 var cameraPose = new Pose3d(state.getGlobalPoseEstimate())
                     .plus(Constants.Vision.cameraConstants[result._0()].robotToCamera);
@@ -102,6 +108,7 @@ public class Vision extends SubsystemBase {
         }
 
         for (int i = 0; i < Constants.Vision.cameraConstants.length; i++) {
+            Logger.recordOutput(cameraContributedKeys[i], cameraContributed[i]);
             if (cameraViz[i].length == 0) {
                 continue;
             }

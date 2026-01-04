@@ -62,4 +62,10 @@ public final class SwerveSim implements SwerveIO {
         inputs.timestamps = new double[] {Timer.getTimestamp()};
     }
 
+
+    @Override
+    public void resetPose(Pose2d pose) {
+        mapleSim.setSimulationWorldPose(pose);
+    }
+
 }

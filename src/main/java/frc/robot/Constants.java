@@ -8,6 +8,7 @@ import com.studica.frc.AHRS.NavXComType;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -208,7 +209,7 @@ public final class Constants {
                 .simLatencyStdDev(0.02)
                 .calibrationErrorMean(0.8)
                 .calibrationErrorStdDev(0.08)
-                .robotToCamera(new Transform3d())
+                .robotToCamera(new Transform3d(0, 0, 0, new Rotation3d(Units.degreesToRadians(180), 0, 0)))
                 .translationError(0.02)
                 .finish(),
         };

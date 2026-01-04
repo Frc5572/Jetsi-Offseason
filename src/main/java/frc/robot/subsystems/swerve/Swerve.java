@@ -1,7 +1,6 @@
 package frc.robot.subsystems.swerve;
 
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
@@ -10,6 +9,7 @@ import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import org.jspecify.annotations.NullMarked;
 import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -109,7 +109,7 @@ public final class Swerve extends SubsystemBase {
         } finally {
             this.odometryLock.unlock();
         }
-        this.state = new SwerveState(initPositions);
+        this.state = new SwerveState(initPositions, this.gyroInputs.yaw);
     }
 
     @Override
@@ -132,23 +132,25 @@ public final class Swerve extends SubsystemBase {
             this.modules[i].periodic();
         }
 
-        double[] sampleTimestamps = this.inputs.timestamps;
-        SwerveModulePosition[] wheelPositions = new SwerveModulePosition[modules.length];
-        for (int i = 0; i < sampleTimestamps.length; i++) {
-            for (int j = 0; j < modules.length; j++) {
-                wheelPositions[j] = modules[j].getOdometryPosition(i);
-            }
-            state.addOdometryObservation(wheelPositions,
-                Optional.ofNullable(
-                    gyroInputs.connected ? Rotation2d.fromRadians(gyroInputs.yawRads[i]) : null),
-                sampleTimestamps[i]);
-        }
         SwerveModuleState[] wheelStates = new SwerveModuleState[modules.length];
         for (int j = 0; j < modules.length; j++) {
             wheelStates[j] = modules[j].getState();
         }
         ChassisSpeeds currentSpeeds =
             Constants.Swerve.swerveKinematics.toChassisSpeeds(wheelStates);
+        double[] sampleTimestamps = this.inputs.timestamps;
+        double gyroPerSample = currentSpeeds.omegaRadiansPerSecond / sampleTimestamps.length;
+        SwerveModulePosition[] wheelPositions = new SwerveModulePosition[modules.length];
+        for (int i = 0; i < sampleTimestamps.length; i++) {
+            for (int j = 0; j < modules.length; j++) {
+                wheelPositions[j] = modules[j].getOdometryPosition(i);
+            }
+            state.addOdometryObservation(wheelPositions,
+                gyroInputs.connected ? Rotation2d.fromRadians(gyroInputs.yawRads[i])
+                    : state.getGlobalPoseEstimate().getRotation()
+                        .plus(Rotation2d.fromRadians((gyroPerSample + 1) * i)),
+                sampleTimestamps[i]);
+        }
         limiter.update(currentSpeeds);
         state.updateSpeeds(currentSpeeds);
 
@@ -201,6 +203,29 @@ public final class Swerve extends SubsystemBase {
     public Command driveFieldRelative(Supplier<ChassisSpeeds> driveSpeeds) {
         return driveRobotRelative(() -> ChassisSpeeds.fromFieldRelativeSpeeds(driveSpeeds.get(),
             state.getGlobalPoseEstimate().getRotation()));
+    }
+
+    /**
+     * Immediately sets the robot's pose to a new value, updating both the odometry estimator and
+     * the underlying simulation state (if any).
+     *
+     * <p>
+     * This is useful when you need to forcibly override the robot's pose, for example during
+     * testing or at the start of autonomous in simulation.
+     *
+     * <p>
+     * If you only want to update the odometry/estimator without affecting any simulation state, use
+     * {@link SwerveState#resetPose(Pose2d)} instead.
+     *
+     * @param newPose a supplier that provides the new robot pose in field coordinates
+     * @return a command that applies the pose override once when scheduled
+     */
+    public Command overridePose(Supplier<Pose2d> newPose) {
+        return Commands.runOnce(() -> {
+            Pose2d newPose_ = newPose.get();
+            io.resetPose(newPose_);
+            state.resetPose(newPose_);
+        });
     }
 
     /**

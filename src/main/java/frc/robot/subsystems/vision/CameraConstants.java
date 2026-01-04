@@ -26,6 +26,7 @@ public class CameraConstants {
     public final Transform3d robotToCamera;
     public final double translationError;
     public final double rotationError;
+    public final double singleTagError;
 
     /** Constants for a camera */
     @TypeStateBuilder("CameraConstantsBuilder")
@@ -41,7 +42,8 @@ public class CameraConstants {
             value = "edu.wpi.first.units.Units.Seconds.of(seconds)")) Time simLatencyStdDev,
         @RequiredField double calibrationErrorMean, @RequiredField double calibrationErrorStdDev,
         @RequiredField Transform3d robotToCamera, @OptionalField("0.3") double translationError,
-        @OptionalField("edu.wpi.first.math.util.Units.degreesToRadians(3)") double rotationError) {
+        @OptionalField("edu.wpi.first.math.util.Units.degreesToRadians(3)") double rotationError,
+        @OptionalField("0.2") double singleTagError) {
         this.name = name;
         this.height = height;
         this.width = width;
@@ -54,6 +56,7 @@ public class CameraConstants {
         this.robotToCamera = robotToCamera;
         this.translationError = translationError;
         this.rotationError = rotationError;
+        this.singleTagError = singleTagError;
     }
 
 

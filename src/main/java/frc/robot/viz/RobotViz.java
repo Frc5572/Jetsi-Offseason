@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import frc.robot.Constants;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.SwerveSim;
+import frc.robot.subsystems.vision.CameraConstants;
 
 /**
  * Centralized visualization helper for publishing robot state to logging and visualization tools.
@@ -74,6 +75,10 @@ public class RobotViz {
         Pose3d robotPose = robotPoseSupplier.get();
         Pose3d estPose = estPoseSupplier.get();
         Logger.recordOutput("Viz/ActualPose", robotPose);
+        for (CameraConstants constants : Constants.Vision.cameraConstants) {
+            Logger.recordOutput("Viz/Cameras/" + constants.name + "/ActualPose",
+                robotPose.plus(constants.robotToCamera));
+        }
         Logger.recordOutput("Viz/GlobalEstPose", estPose);
         Logger.recordOutput("Viz/CameraPoses", Arrays.stream(Constants.Vision.cameraConstants)
             .map(consts -> robotPose.plus(consts.robotToCamera)).toArray(Pose3d[]::new));
