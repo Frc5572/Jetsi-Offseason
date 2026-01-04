@@ -82,10 +82,13 @@ public final class DeviceDebug {
             var brakeModeTopic = instance.getBooleanTopic(key + "/Brake");
             TalonFX talon = kv.getValue();
             boolean isBrake = getBrakeMode(talon);
-            brakeModeTopic.publish().accept(isBrake);
+            var publisher = brakeModeTopic.publish();
+            publisher.accept(isBrake);
             instance.addListener(brakeModeTopic.subscribe(isBrake),
-                EnumSet.of(NetworkTableEvent.Kind.kValueAll), (ev) -> {
+                EnumSet.of(NetworkTableEvent.Kind.kValueRemote), (ev) -> {
                     setBrakeMode(talon, ev.valueData.value.getBoolean());
+                    boolean isBrake_ = getBrakeMode(talon);
+                    publisher.accept(isBrake_);
                 });
         }
     }
