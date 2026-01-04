@@ -18,13 +18,14 @@ public class TeleopControls {
             double xaxis = right.getAsDouble();
             double yaxis = forward.getAsDouble();
             double raxis = turnCCW.getAsDouble();
-            yaxis = MathUtil.applyDeadband(yaxis, Constants.STICK_DEADBAND);
-            xaxis = MathUtil.applyDeadband(xaxis, Constants.STICK_DEADBAND);
+            yaxis = MathUtil.applyDeadband(yaxis, Constants.DriverControls.stickDeadband);
+            xaxis = MathUtil.applyDeadband(xaxis, Constants.DriverControls.stickDeadband);
             xaxis *= xaxis * Math.signum(xaxis);
             yaxis *= yaxis * Math.signum(yaxis);
-            raxis = (Math.abs(raxis) < Constants.STICK_DEADBAND) ? 0 : raxis;
-            return new ChassisSpeeds(yaxis * Constants.Swerve.maxSpeed,
-                xaxis * Constants.Swerve.maxSpeed, raxis * Constants.Swerve.maxAngularVelocity);
+            raxis = (Math.abs(raxis) < Constants.DriverControls.stickDeadband) ? 0 : raxis;
+            return new ChassisSpeeds(yaxis * Constants.DriverControls.driverTranslationalMaxSpeed,
+                xaxis * Constants.DriverControls.driverTranslationalMaxSpeed,
+                raxis * Constants.DriverControls.driverRotationalMaxSpeed);
         };
     }
 

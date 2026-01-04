@@ -22,26 +22,19 @@ import frc.robot.subsystems.vision.CameraConstantsBuilder;
  * Constants file.
  */
 public final class Constants {
-    /**
-     * Stick Deadband
-     */
-    public static final double STICK_DEADBAND = 0.1;
 
-    /**
-     * Driver ID
-     */
-    public static final int DRIVER_ID = 0;
+    /** Constants for driver controls */
+    public static class DriverControls {
+        /** Driverstation controller Index */
+        public static final int controllerId = 0;
+        /** Stick axis controls less than this amount are treated as 0. */
+        public static final double stickDeadband = 0.1;
 
-    /**
-     * Operator ID
-     */
-    public static final int OPERATOR_ID = 1;
-
-    /**
-     * How far in the future we should "lead" the aiming of the shooter for shooting while moving.
-     */
-    public static final double LEAD_GAIN = 0.3;
-
+        /** Maximum Translational speed (in m/s) */
+        public static final double driverTranslationalMaxSpeed = 3.0;
+        /** Maximum Rotational speed (in rad/s) */
+        public static final double driverRotationalMaxSpeed = 4.0;
+    }
 
     /**
      * MoveToPos constants.

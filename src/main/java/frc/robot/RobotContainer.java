@@ -34,7 +34,8 @@ import frc.robot.viz.RobotViz;
 public final class RobotContainer {
 
     /* Controllers */
-    public final CommandXboxController driver = new CommandXboxController(Constants.DRIVER_ID);
+    public final CommandXboxController driver =
+        new CommandXboxController(Constants.DriverControls.controllerId);
 
     /* Subsystems */
     private final Swerve swerve;
