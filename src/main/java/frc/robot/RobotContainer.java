@@ -9,9 +9,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Robot.RobotRunType;
 import frc.robot.commands.TeleopSwerve;
-import frc.robot.subsystems.quest.Quest;
-import frc.robot.subsystems.quest.QuestIO;
-import frc.robot.subsystems.quest.QuestReal;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.SwerveIO;
 import frc.robot.subsystems.swerve.SwerveReal;
@@ -36,7 +33,6 @@ public class RobotContainer {
 
     /* Subsystems */
     private Swerve s_Swerve;
-    private final Quest quest;
 
     /**
      */
@@ -44,16 +40,13 @@ public class RobotContainer {
 
         switch (runtimeType) {
             case kReal:
-                quest = new Quest(new QuestReal());
                 s_Swerve = new Swerve(new SwerveReal());
                 break;
             case kSimulation:
                 s_Swerve = new Swerve(new SwerveIO() {});
-                quest = new Quest(new QuestIO() {});
                 break;
             default:
                 s_Swerve = new Swerve(new SwerveIO() {});
-                quest = new Quest(new QuestIO() {});
         }
 
         // autoChooser.addOption("P32", new P32(s_Swerve, elevatorWrist, intake, shooter));
