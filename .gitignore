@@ -182,7 +182,6 @@ ctre_sim/
 BuildConstants.java
 simgui-ds.json
 
-!src/main/deploy/photon-configs/*.zip
 
 /*.wpilog
 /*-profile.json
