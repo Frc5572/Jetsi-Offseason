@@ -23,6 +23,12 @@ public class SwerveReal implements SwerveIO {
 
     }
 
+    /**
+     * Create a swerve module
+     *
+     * @param moduleNumber Module Number
+     * @return SwerveModule
+     */
     public SwerveModule createSwerveModule(int moduleNumber) {
         // Automatically fetch the values from the array we built using the module index
         int driveMotorID = Constants.Swerve.moduleConstants[moduleNumber].driveMotorId;
