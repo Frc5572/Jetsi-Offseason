@@ -44,7 +44,7 @@ public class SwerveModuleReal implements SwerveModuleIO {
     private final Rotation2d angleOffset;
 
     /** Instantiating motors and Encoders */
-    public SwerveModuleReal(int driveMotorID, int angleMotorID, int cancoderID,
+    public SwerveModuleReal(int index, int driveMotorID, int angleMotorID, int cancoderID,
         Rotation2d cancoderOffset) {
 
         this.angleOffset = cancoderOffset;
@@ -54,8 +54,8 @@ public class SwerveModuleReal implements SwerveModuleIO {
         mAngleMotor = new TalonFX(angleMotorID);
 
         configAngleEncoder();
-        configAngleMotor();
-        configDriveMotor();
+        configAngleMotor(index);
+        configDriveMotor(index);
 
         driveMotorSelectedPosition = mDriveMotor.getPosition();
         driveMotorSelectedSensorVelocity = mDriveMotor.getVelocity();
@@ -63,7 +63,7 @@ public class SwerveModuleReal implements SwerveModuleIO {
         absolutePositionAngleEncoder = angleEncoder.getAbsolutePosition();
     }
 
-    private void configAngleMotor() {
+    private void configAngleMotor(int index) {
         /* Angle Motor Config */
         /* Motor Inverts and Neutral Mode */
         swerveAngleFXConfig.MotorOutput.Inverted = Constants.Swerve.angleMotorInvert;
@@ -73,7 +73,8 @@ public class SwerveModuleReal implements SwerveModuleIO {
         swerveAngleFXConfig.Feedback.FeedbackRemoteSensorID = angleEncoder.getDeviceID();
         swerveAngleFXConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
         swerveAngleFXConfig.Feedback.SensorToMechanismRatio = 1.0;
-        swerveAngleFXConfig.Feedback.RotorToSensorRatio = Constants.Swerve.angleGearRatio;
+        swerveAngleFXConfig.Feedback.RotorToSensorRatio =
+            Constants.Swerve.moduleConstants[index].kind.angleGearRatio;
         swerveAngleFXConfig.ClosedLoopGeneral.ContinuousWrap = true;
 
         /* Current Limiting */
@@ -93,14 +94,15 @@ public class SwerveModuleReal implements SwerveModuleIO {
         mAngleMotor.getConfigurator().apply(swerveAngleFXConfig);
     }
 
-    private void configDriveMotor() {
+    private void configDriveMotor(int index) {
         /* Drive Motor Config */
         /* Motor Inverts and Neutral Mode */
         swerveDriveFXConfig.MotorOutput.Inverted = Constants.Swerve.driveMotorInvert;
         swerveDriveFXConfig.MotorOutput.NeutralMode = Constants.Swerve.driveNeutralMode;
 
         /* Gear Ratio Config */
-        swerveDriveFXConfig.Feedback.SensorToMechanismRatio = Constants.Swerve.driveGearRatio;
+        swerveDriveFXConfig.Feedback.SensorToMechanismRatio =
+            Constants.Swerve.moduleConstants[index].kind.driveGearRatio;
 
         /* Current Limiting */
         swerveDriveFXConfig.CurrentLimits.SupplyCurrentLimitEnable =

@@ -1,0 +1,48 @@
+package frc.lib.util.swerve;
+
+import edu.wpi.first.math.geometry.Rotation2d;
+
+/** Per-module constants */
+public class ModuleConstants {
+
+    /** Constants for vendor swerve modules */
+    public static enum ModuleKind {
+        Mk4i(5.36, 150.0 / 7.0), Mk4n(5.36, 18.75);
+
+        public final double driveGearRatio;
+        public final double angleGearRatio;
+
+        ModuleKind(double driveGearRatio_, double angleGearRatio_) {
+            driveGearRatio = driveGearRatio_;
+            angleGearRatio = angleGearRatio_;
+        }
+
+
+    }
+
+    public final ModuleKind kind;
+
+    /** CAN ID for the drive motor */
+    public final int driveMotorId;
+
+    /** CAN ID for the angle motor */
+    public final int angleMotorId;
+
+    /** CAN ID for the CANCoder */
+    public final int canCoderId;
+
+    /** Reported angle when wheel is straight */
+    public final Rotation2d angleOffset;
+
+    /** Per-module constants */
+
+    public ModuleConstants(int driveMotorId, int angleMotorId, int canCoderId,
+        Rotation2d angleOffset, ModuleKind kind) {
+        this.driveMotorId = driveMotorId;
+        this.angleMotorId = angleMotorId;
+        this.canCoderId = canCoderId;
+        this.angleOffset = angleOffset;
+        this.kind = kind;
+    }
+
+}

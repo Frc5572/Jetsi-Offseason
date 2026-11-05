@@ -23,27 +23,25 @@ public class SwerveReal implements SwerveIO {
 
     }
 
-    public SwerveModule createSwerveModule(int moduleNumber, int driveMotorID, int angleMotorID,
-        int cancoderID, Rotation2d angleOffset) {
-        return new SwerveModule(moduleNumber, angleOffset,
-            new SwerveModuleReal(driveMotorID, angleMotorID, cancoderID, angleOffset));
+    public SwerveModule createSwerveModule(int moduleNumber) {
+        // Automatically fetch the values from the array we built using the module index
+        int driveMotorID = Constants.Swerve.moduleConstants[moduleNumber].driveMotorId;
+        int angleMotorID = Constants.Swerve.moduleConstants[moduleNumber].angleMotorId;
+        int cancoderID = Constants.Swerve.moduleConstants[moduleNumber].canCoderId;
+        Rotation2d angleOffset = Constants.Swerve.moduleConstants[moduleNumber].angleOffset;
+
+        // Note: Passing moduleNumber first to match your updated SwerveModuleReal constructor!
+        return new SwerveModule(moduleNumber, angleOffset, new SwerveModuleReal(moduleNumber,
+            driveMotorID, angleMotorID, cancoderID, angleOffset));
     }
 
     @Override
     public SwerveModule[] createModules() {
-        return new SwerveModule[] {
-            createSwerveModule(0, Constants.Swerve.Mod0.driveMotorID,
-                Constants.Swerve.Mod0.angleMotorID, Constants.Swerve.Mod0.canCoderID,
-                Constants.Swerve.Mod0.angleOffset),
-            createSwerveModule(1, Constants.Swerve.Mod1.driveMotorID,
-                Constants.Swerve.Mod1.angleMotorID, Constants.Swerve.Mod1.canCoderID,
-                Constants.Swerve.Mod1.angleOffset),
-            createSwerveModule(2, Constants.Swerve.Mod2.driveMotorID,
-                Constants.Swerve.Mod2.angleMotorID, Constants.Swerve.Mod2.canCoderID,
-                Constants.Swerve.Mod2.angleOffset),
-            createSwerveModule(3, Constants.Swerve.Mod3.driveMotorID,
-                Constants.Swerve.Mod3.angleMotorID, Constants.Swerve.Mod3.canCoderID,
-                Constants.Swerve.Mod3.angleOffset)};
+        return new SwerveModule[] {createSwerveModule(0), // Front Left
+            createSwerveModule(1), // Front Right
+            createSwerveModule(2), // Back Left
+            createSwerveModule(3) // Back Right
+        };
     }
 
 }
