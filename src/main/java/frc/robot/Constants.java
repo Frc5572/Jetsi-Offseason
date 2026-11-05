@@ -89,10 +89,6 @@ public final class Constants {
                 new Translation2d(-wheelBase / 2.0, trackWidth / 2.0),
                 new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0));
 
-        /* Module Gear Ratios */
-        public static final double driveGearRatio = (8.14 / 1.0); // MK4 L1
-        public static final double angleGearRatio = ((12.8) / 1.0); // (150 / 7) : 1
-
         /* Motor Inverts */
         public static final InvertedValue angleMotorInvert =
             InvertedValue.CounterClockwise_Positive;
@@ -154,17 +150,16 @@ public final class Constants {
          */
         public static final ModuleConstants[] moduleConstants = new ModuleConstants[] {
             // Front Left (Module 0)
-            new ModuleConstants(12, 13, 4, Rotation2d.fromRotations(0.056641), ModuleKind.Mk4i),
+            new ModuleConstants(20, 1, 16, Rotation2d.fromRotations(0.056641), ModuleKind.Mk4i),
 
             // Front Right (Module 1)
-            new ModuleConstants(0, 1, 2, Rotation2d.fromRotations(-0.099121), ModuleKind.Mk4i),
+            new ModuleConstants(14, 15, 17, Rotation2d.fromRotations(-0.099121), ModuleKind.Mk4i),
 
             // Back Left (Module 2)
-            new ModuleConstants(10, 11, 1, Rotation2d.fromRotations(0.135742), ModuleKind.Mk4i),
+            new ModuleConstants(3, 2, 19, Rotation2d.fromRotations(0.135742), ModuleKind.Mk4n),
 
-            // Back Right (Module 3) - Update these values with your actual Back Right IDs and
-            // offset!
-            new ModuleConstants(20, 21, 3, Rotation2d.fromRotations(0.0), ModuleKind.Mk4i)};
+            // Back Right (Module 3) -
+            new ModuleConstants(12, 13, 18, Rotation2d.fromRotations(0.0), ModuleKind.Mk4n)};
 
 
         // public static final HolonomicPathFollowerConfig pathFollowerConfig =
