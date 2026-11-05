@@ -53,7 +53,7 @@ public class SwerveModuleReal implements SwerveModuleIO {
         mDriveMotor = new TalonFX(driveMotorID);
         mAngleMotor = new TalonFX(angleMotorID);
 
-        configAngleEncoder();
+        configAngleEncoder(index);
         configAngleMotor(index);
         configDriveMotor(index);
 
@@ -66,7 +66,8 @@ public class SwerveModuleReal implements SwerveModuleIO {
     private void configAngleMotor(int index) {
         /* Angle Motor Config */
         /* Motor Inverts and Neutral Mode */
-        swerveAngleFXConfig.MotorOutput.Inverted = Constants.Swerve.angleMotorInvert;
+        swerveAngleFXConfig.MotorOutput.Inverted =
+            Constants.Swerve.moduleConstants[index].kind.angleMotorDirection;
         swerveAngleFXConfig.MotorOutput.NeutralMode = Constants.Swerve.angleNeutralMode;
 
         /* Gear Ratio and Wrapping Config */
@@ -97,7 +98,8 @@ public class SwerveModuleReal implements SwerveModuleIO {
     private void configDriveMotor(int index) {
         /* Drive Motor Config */
         /* Motor Inverts and Neutral Mode */
-        swerveDriveFXConfig.MotorOutput.Inverted = Constants.Swerve.driveMotorInvert;
+        swerveDriveFXConfig.MotorOutput.Inverted =
+            Constants.Swerve.moduleConstants[index].kind.driveMotorDirection;
         swerveDriveFXConfig.MotorOutput.NeutralMode = Constants.Swerve.driveNeutralMode;
 
         /* Gear Ratio Config */
@@ -135,9 +137,10 @@ public class SwerveModuleReal implements SwerveModuleIO {
         mDriveMotor.getConfigurator().setPosition(0.0);
     }
 
-    private void configAngleEncoder() {
+    private void configAngleEncoder(int index) {
         /* Angle Encoder Config */
-        swerveCANcoderConfig.MagnetSensor.SensorDirection = Constants.Swerve.cancoderInvert;
+        swerveCANcoderConfig.MagnetSensor.SensorDirection =
+            Constants.Swerve.moduleConstants[index].kind.canCoderDirection;
         swerveCANcoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5;
         swerveCANcoderConfig.MagnetSensor.MagnetOffset = -angleOffset.getRotations();
 

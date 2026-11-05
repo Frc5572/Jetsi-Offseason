@@ -1,9 +1,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Inches;
-import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.studica.frc.AHRS.NavXComType;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -89,14 +87,13 @@ public final class Constants {
                 new Translation2d(-wheelBase / 2.0, trackWidth / 2.0),
                 new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0));
 
-        /* Motor Inverts */
-        public static final InvertedValue angleMotorInvert =
-            InvertedValue.CounterClockwise_Positive;
-        public static final InvertedValue driveMotorInvert = InvertedValue.Clockwise_Positive;
+        // /* Motor Inverts */
+        // public static final InvertedValue angleMotorInvert = InvertedValue.Clockwise_Positive;
+        // public static final InvertedValue driveMotorInvert = InvertedValue.Clockwise_Positive;
 
-        /* Angle Encoder Invert */
-        public static final SensorDirectionValue cancoderInvert =
-            SensorDirectionValue.CounterClockwise_Positive;
+        // /* Angle Encoder Invert */
+        // public static final SensorDirectionValue cancoderInvert =
+        // SensorDirectionValue.CounterClockwise_Positive;
 
         /* Swerve Current Limiting */
         public static final int angleCurrentLimit = 25;
@@ -150,16 +147,16 @@ public final class Constants {
          */
         public static final ModuleConstants[] moduleConstants = new ModuleConstants[] {
             // Front Left (Module 0)
-            new ModuleConstants(20, 1, 16, Rotation2d.fromRotations(0.056641), ModuleKind.Mk4i),
+            new ModuleConstants(20, 1, 16, Rotation2d.fromRotations(0.007324), ModuleKind.Mk4i),
 
             // Front Right (Module 1)
-            new ModuleConstants(14, 15, 17, Rotation2d.fromRotations(-0.099121), ModuleKind.Mk4i),
+            new ModuleConstants(14, 15, 17, Rotation2d.fromRotations(0.048340), ModuleKind.Mk4i),
 
             // Back Left (Module 2)
-            new ModuleConstants(3, 2, 19, Rotation2d.fromRotations(0.135742), ModuleKind.Mk4n),
+            new ModuleConstants(3, 2, 18, Rotation2d.fromRotations(0.275391), ModuleKind.Mk4n),
 
             // Back Right (Module 3) -
-            new ModuleConstants(12, 13, 18, Rotation2d.fromRotations(0.0), ModuleKind.Mk4n)};
+            new ModuleConstants(12, 13, 19, Rotation2d.fromRotations(-0.597900), ModuleKind.Mk4n)};
 
 
         // public static final HolonomicPathFollowerConfig pathFollowerConfig =

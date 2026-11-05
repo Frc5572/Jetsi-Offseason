@@ -1,5 +1,7 @@
 package frc.lib.util.swerve;
 
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 
 /** Per-module constants */
@@ -7,14 +9,26 @@ public class ModuleConstants {
 
     /** Constants for vendor swerve modules */
     public static enum ModuleKind {
-        Mk4i(5.36, 150.0 / 7.0), Mk4n(5.36, 18.75);
+        Mk4i(5.36, 150.0 / 7.0, InvertedValue.Clockwise_Positive,
+            InvertedValue.CounterClockwise_Positive,
+            SensorDirectionValue.CounterClockwise_Positive), Mk4n(5.36, 18.75,
+                InvertedValue.Clockwise_Positive, InvertedValue.CounterClockwise_Positive,
+                SensorDirectionValue.CounterClockwise_Positive);
 
         public final double driveGearRatio;
         public final double angleGearRatio;
+        public final InvertedValue angleMotorDirection;
+        public final InvertedValue driveMotorDirection;
+        public final SensorDirectionValue canCoderDirection;
 
-        ModuleKind(double driveGearRatio_, double angleGearRatio_) {
+        ModuleKind(double driveGearRatio_, double angleGearRatio_,
+            InvertedValue angleMotorDirection_, InvertedValue driveMotorDirection_,
+            SensorDirectionValue canCoderDirection_) {
             driveGearRatio = driveGearRatio_;
             angleGearRatio = angleGearRatio_;
+            angleMotorDirection = angleMotorDirection_;
+            driveMotorDirection = driveMotorDirection_;
+            canCoderDirection = canCoderDirection_;
         }
 
 
