@@ -27,8 +27,8 @@ public class SwerveModuleSim implements SwerveModuleIO {
     public int moduleNumber;
 
     private FlywheelSim driveSim =
-        new FlywheelSim(LinearSystemId.createFlywheelSystem(DCMotor.getFalcon500(1),
-            Constants.Swerve.driveGearRatio, 0.025), DCMotor.getFalcon500(1));
+        new FlywheelSim(LinearSystemId.createFlywheelSystem(DCMotor.getFalcon500(1), 1, 0.025),
+            DCMotor.getFalcon500(1));
 
     private Angle angle = Rotations.of(0);
     private Angle distance = Rotations.of(0);

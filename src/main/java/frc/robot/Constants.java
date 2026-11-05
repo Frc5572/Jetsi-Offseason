@@ -1,9 +1,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Inches;
-import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.studica.frc.AHRS.NavXComType;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -11,6 +9,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
+import frc.lib.util.swerve.ModuleConstants;
+import frc.lib.util.swerve.ModuleConstants.ModuleKind;
 
 /**
  * Constants file.
@@ -87,18 +87,13 @@ public final class Constants {
                 new Translation2d(-wheelBase / 2.0, trackWidth / 2.0),
                 new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0));
 
-        /* Module Gear Ratios */
-        public static final double driveGearRatio = (8.14 / 1.0); // MK4 L1
-        public static final double angleGearRatio = ((12.8) / 1.0); // (150 / 7) : 1
+        // /* Motor Inverts */
+        // public static final InvertedValue angleMotorInvert = InvertedValue.Clockwise_Positive;
+        // public static final InvertedValue driveMotorInvert = InvertedValue.Clockwise_Positive;
 
-        /* Motor Inverts */
-        public static final InvertedValue angleMotorInvert =
-            InvertedValue.CounterClockwise_Positive;
-        public static final InvertedValue driveMotorInvert = InvertedValue.Clockwise_Positive;
-
-        /* Angle Encoder Invert */
-        public static final SensorDirectionValue cancoderInvert =
-            SensorDirectionValue.CounterClockwise_Positive;
+        // /* Angle Encoder Invert */
+        // public static final SensorDirectionValue cancoderInvert =
+        // SensorDirectionValue.CounterClockwise_Positive;
 
         /* Swerve Current Limiting */
         public static final int angleCurrentLimit = 25;
@@ -150,49 +145,18 @@ public final class Constants {
         /**
          * Front Left Module - Module 0
          */
-        public static final class Mod0 {
-            public static final int driveMotorID = 12;
-            public static final int angleMotorID = 13;
-            public static final int canCoderID = 4;
-            // public static final Rotation2d angleOffset = Rotation2d.fromDegrees(183.955078125);
-            public static final Rotation2d angleOffset = Rotation2d.fromRotations(0.056641);
+        public static final ModuleConstants[] moduleConstants = new ModuleConstants[] {
+            // Front Left (Module 0)
+            new ModuleConstants(20, 1, 16, Rotation2d.fromRotations(0.007324), ModuleKind.Mk4i),
 
-        }
+            // Front Right (Module 1)
+            new ModuleConstants(14, 15, 17, Rotation2d.fromRotations(0.048340), ModuleKind.Mk4i),
 
-        /**
-         * Front Right Module - Module 1
-         */
-        public static final class Mod1 {
-            public static final int driveMotorID = 0;
-            public static final int angleMotorID = 1;
-            public static final int canCoderID = 2;
-            // public static final Rotation2d angleOffset = Rotation2d.fromDegrees(325.01953125);
-            public static final Rotation2d angleOffset = Rotation2d.fromRotations(-0.099121);
+            // Back Left (Module 2)
+            new ModuleConstants(3, 2, 18, Rotation2d.fromRotations(0.275391), ModuleKind.Mk4n),
 
-        }
-
-        /**
-         * Back Left Module - Module 2
-         */
-        public static final class Mod2 {
-            public static final int driveMotorID = 10;
-            public static final int angleMotorID = 11;
-            public static final int canCoderID = 1;
-            // public static final Rotation2d angleOffset = Rotation2d.fromDegrees(124.62890625);
-            public static final Rotation2d angleOffset = Rotation2d.fromRotations(0.135742);
-
-        }
-
-        /**
-         * Back Right Module - Module 3
-         */
-        public static final class Mod3 {
-            public static final int driveMotorID = 18;
-            public static final int angleMotorID = 19;
-            public static final int canCoderID = 10;
-            // public static final Rotation2d angleOffset = Rotation2d.fromDegrees(295.400390625);
-            public static final Rotation2d angleOffset = Rotation2d.fromRotations(0.30835);
-        }
+            // Back Right (Module 3) -
+            new ModuleConstants(12, 13, 19, Rotation2d.fromRotations(-0.597900), ModuleKind.Mk4n)};
 
 
         // public static final HolonomicPathFollowerConfig pathFollowerConfig =
