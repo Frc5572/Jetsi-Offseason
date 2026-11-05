@@ -155,7 +155,7 @@ public final class Constants {
             public static final int angleMotorID = 1;
             public static final int canCoderID = 16;
             // public static final Rotation2d angleOffset = Rotation2d.fromDegrees(183.955078125);
-            public static final Rotation2d angleOffset = Rotation2d.fromRotations(0.056641);
+            public static final Rotation2d angleOffset = Rotation2d.fromRotations(0.007324);
 
         }
 
@@ -167,7 +167,7 @@ public final class Constants {
             public static final int angleMotorID = 15;
             public static final int canCoderID = 17;
             // public static final Rotation2d angleOffset = Rotation2d.fromDegrees(325.01953125);
-            public static final Rotation2d angleOffset = Rotation2d.fromRotations(-0.099121);
+            public static final Rotation2d angleOffset = Rotation2d.fromRotations(0.048340);
 
         }
 
@@ -179,7 +179,7 @@ public final class Constants {
             public static final int angleMotorID = 2;
             public static final int canCoderID = 18;
             // public static final Rotation2d angleOffset = Rotation2d.fromDegrees(124.62890625);
-            public static final Rotation2d angleOffset = Rotation2d.fromRotations(0.135742);
+            public static final Rotation2d angleOffset = Rotation2d.fromRotations(0.275391);
 
         }
 
@@ -191,7 +191,7 @@ public final class Constants {
             public static final int angleMotorID = 13;
             public static final int canCoderID = 19;
             // public static final Rotation2d angleOffset = Rotation2d.fromDegrees(295.400390625);
-            public static final Rotation2d angleOffset = Rotation2d.fromRotations(0.30835);
+            public static final Rotation2d angleOffset = Rotation2d.fromRotations(0.097412);
         }
 
 
