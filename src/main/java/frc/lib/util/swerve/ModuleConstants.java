@@ -13,7 +13,9 @@ public class ModuleConstants {
             InvertedValue.CounterClockwise_Positive,
             SensorDirectionValue.CounterClockwise_Positive), Mk4n(5.36, 18.75,
                 InvertedValue.Clockwise_Positive, InvertedValue.CounterClockwise_Positive,
-                SensorDirectionValue.CounterClockwise_Positive);
+                SensorDirectionValue.CounterClockwise_Positive), Mk4(8.14, 12.8,
+                    InvertedValue.CounterClockwise_Positive, InvertedValue.Clockwise_Positive,
+                    SensorDirectionValue.CounterClockwise_Positive);
 
         public final double driveGearRatio;
         public final double angleGearRatio;
