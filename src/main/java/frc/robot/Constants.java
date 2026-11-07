@@ -147,16 +147,16 @@ public final class Constants {
          */
         public static final ModuleConstants[] moduleConstants = new ModuleConstants[] {
             // Front Left (Module 0)
-            new ModuleConstants(20, 1, 16, Rotation2d.fromRotations(0.007324), ModuleKind.Mk4i),
+            new ModuleConstants(12, 13, 4, Rotation2d.fromRotations(-0.446045), ModuleKind.Mk4),
 
             // Front Right (Module 1)
-            new ModuleConstants(14, 15, 17, Rotation2d.fromRotations(0.048340), ModuleKind.Mk4i),
+            new ModuleConstants(0, 1, 2, Rotation2d.fromRotations(0.401123), ModuleKind.Mk4),
 
             // Back Left (Module 2)
-            new ModuleConstants(3, 2, 18, Rotation2d.fromRotations(0.275391), ModuleKind.Mk4n),
+            new ModuleConstants(10, 11, 1, Rotation2d.fromRotations(-0.361816), ModuleKind.Mk4),
 
             // Back Right (Module 3) -
-            new ModuleConstants(12, 13, 19, Rotation2d.fromRotations(-0.597900), ModuleKind.Mk4n)};
+            new ModuleConstants(18, 19, 10, Rotation2d.fromRotations(-0.176025), ModuleKind.Mk4)};
 
 
         // public static final HolonomicPathFollowerConfig pathFollowerConfig =
